@@ -1,3 +1,12 @@
+#include "raylib.h"
+
 int main(){
-    return 0;
+    InitWindow(400, 400, "hight");
+
+    while (!WindowShouldClose()){
+        BeginDrawing();
+
+        EndDrawing();
+    }
+    CloseWindow();
 }
