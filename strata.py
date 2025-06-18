@@ -1,4 +1,10 @@
 import pyray as pr
+import sprite
+
+texture = sprite.Texture()
+sprite = sprite.Sprite()
+
+print(sprite.texture)
 
 pr.init_window(400, 400, 'test')
 
