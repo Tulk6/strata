@@ -1,12 +1,18 @@
-#include "wren.c" //only here because of intellisense :( unneeded cos in main.c
-
 WrenVM* vm;
 
 void write_fn(WrenVM* vm, const char* text){
     printf("%s", text);
 }
 
+void print_mult(WrenVM* vm){
+    double n = wrenGetSlotDouble(vm, 1);
+    for (int i=0; i<n; i++){
+        //printf("%s", "hi!");
+    }
+}
+
 WrenForeignMethodFn foreign_methods(const char* signature){ 
+    if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return print_mult;
     return NULL;
 }
 
@@ -26,6 +32,19 @@ WrenForeignMethodFn bind_foreign_method_fn(WrenVM* vm, const char* module, const
     return foreign_methods(full_signature);
 }
 
+WrenForeignClassMethods bind_foreign_class(WrenVM* vm, const char* module, const char* class_name){
+    WrenForeignClassMethods class_methods;
+    if (!strcmp(class_name, "Sprite")){
+        printf("yay\n");
+        class_methods.allocate = NULL;
+        class_methods.finalize = NULL;
+    }/*else if (!strcmp(class_name, "Palette")){
+        class_methods.allocate = palette_foreign_allocate;
+        class_methods.finalize = palette_foreign_finalize;
+    }*/
+    return class_methods;
+}
+
 void error_fn(WrenVM* vm, WrenErrorType type, const char* module, int line, const char* message){
     switch (type){
         case WREN_ERROR_COMPILE:
@@ -40,6 +59,20 @@ void error_fn(WrenVM* vm, WrenErrorType type, const char* module, int line, cons
     }
 }
 
+void wren_run_code(WrenVM* vm, char* code){
+    WrenInterpretResult result = wrenInterpret(
+        vm, "main", code);
+
+    switch (result) {
+        case WREN_RESULT_COMPILE_ERROR:
+            { printf("Compile Error!\n"); } break;
+        case WREN_RESULT_RUNTIME_ERROR:
+            { printf("Runtime Error!\n"); } break;
+        case WREN_RESULT_SUCCESS:
+            { printf("Success!\n"); } break;
+    }
+}
+
 void interface_init(){
     WrenConfiguration config;
     wrenInitConfiguration(&config);
@@ -47,24 +80,22 @@ void interface_init(){
         config.errorFn = &error_fn;
 
         config.bindForeignMethodFn = &bind_foreign_method_fn;
-        /*config.bindForeignClassFn = &bind_foreign_class;
-        config.loadModuleFn = &load_module_fn;*/
+        config.bindForeignClassFn = &bind_foreign_class;
+        /*config.loadModuleFn = &load_module_fn;*/
 
     vm = wrenNewVM(&config);
 
-    /*printf("engine objects\n");
-    char* engine_objects_str = LoadFileText("engine_objects.wren");
+    char* engine_objects_str = LoadFileText("engine.wren");
     wren_run_code(vm, engine_objects_str);
     UnloadFileText(engine_objects_str);
 
-    printf("main.wren\n");
-    char* main_str = LoadFileText("main.wren");
+    char* main_str = LoadFileText("game.wren");
     wren_run_code(vm, main_str);
     UnloadFileText(main_str);
 
-    printf("main.init())\n");
-    wren_run_code(vm, "var main = Main.init()");
+    wren_run_code(vm, "var game = Game.init()");
 
+    /*
     wren_update_handle = wrenMakeCallHandle(vm, "update(_)");
     wren_render_handle = wrenMakeCallHandle(vm, "render(_)");
     wren_draw_handle = wrenMakeCallHandle(vm, "draw(_)");

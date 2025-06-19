@@ -9,7 +9,7 @@ TARGET = main.exe
 LIBS = -lraylib -lwinmm -lgdi32
 
 SRC = main.c
-MODS = sprite.c interface.c
+MODS = graphics.c interface.c
 
 all: $(TARGET)
 
