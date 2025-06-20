@@ -7,25 +7,11 @@ struct Atlas {
     Texture texture;
 };
 
-struct Sprite {
-    Rectangle src;
-    int slice_width;
-    int slice_height;
-    int num_slices;
-};
-
 struct Atlas global_atlas;
 
 void graphics_load_atlas(char* path){
     global_atlas.image = LoadImage(path);
     global_atlas.texture = LoadTextureFromImage(global_atlas.image);
-}
-
-void graphics_load_sprite(struct Sprite* stacked_sprite, Rectangle src, int slice_width, int slice_height){
-    stacked_sprite->src = src;
-    stacked_sprite->slice_width = slice_width;
-    stacked_sprite->slice_height = slice_height;
-    stacked_sprite->num_slices = (int)(stacked_sprite->src.width/slice_width);
 }
 
 void graphics_draw_sprite(struct Sprite* stacked_sprite, int x, int y, int rotation){
@@ -36,6 +22,18 @@ void graphics_draw_sprite(struct Sprite* stacked_sprite, int x, int y, int rotat
                                                 (Vector2){stacked_sprite->slice_width/2, stacked_sprite->slice_height/2}, rotation, WHITE);
         
     }
+}
+
+void graphics_foreign_draw_sprite(WrenVM* vm){
+    struct Sprite* sprite = (struct Sprite*)wrenGetSlotForeign(vm, 1);
+    int x = wrenGetSlotDouble(vm, 2);
+    int y = wrenGetSlotDouble(vm, 3);
+    int rotation = wrenGetSlotDouble(vm, 4);
+    graphics_draw_sprite(sprite, x, y, rotation);
+}
+
+void graphics_foreign_clear_screen(WrenVM* vm){
+    ClearBackground(BLACK);
 }
 
 void graphics_init(){

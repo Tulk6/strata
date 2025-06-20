@@ -1,5 +1,9 @@
 WrenVM* vm;
 
+WrenHandle* wren_update_handle;
+WrenHandle* wren_draw_handle;
+WrenHandle* wren_game_handle;
+
 void write_fn(WrenVM* vm, const char* text){
     printf("%s", text);
 }
@@ -12,7 +16,10 @@ void print_mult(WrenVM* vm){
 }
 
 WrenForeignMethodFn foreign_methods(const char* signature){ 
-    if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return print_mult;
+    if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return graphics_foreign_draw_sprite;
+    if (!strcmp(signature, "static Graphics.clear_screen()")) return graphics_foreign_clear_screen;
+
+    if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
     return NULL;
 }
 
@@ -35,8 +42,7 @@ WrenForeignMethodFn bind_foreign_method_fn(WrenVM* vm, const char* module, const
 WrenForeignClassMethods bind_foreign_class(WrenVM* vm, const char* module, const char* class_name){
     WrenForeignClassMethods class_methods;
     if (!strcmp(class_name, "Sprite")){
-        printf("yay\n");
-        class_methods.allocate = NULL;
+        class_methods.allocate = sprite_foreign_allocate;
         class_methods.finalize = NULL;
     }/*else if (!strcmp(class_name, "Palette")){
         class_methods.allocate = palette_foreign_allocate;
@@ -73,6 +79,20 @@ void wren_run_code(WrenVM* vm, char* code){
     }
 }
 
+void interface_update(){
+    wrenEnsureSlots(vm, 2);
+    wrenSetSlotHandle(vm, 0, wren_game_handle);
+    wrenSetSlotDouble(vm, 1, (double)GetFrameTime());
+    WrenInterpretResult result = wrenCall(vm, wren_update_handle);
+}
+
+void interface_draw(){
+    wrenEnsureSlots(vm, 2);
+    wrenSetSlotHandle(vm, 0, wren_game_handle);
+    wrenSetSlotDouble(vm, 1, (double)GetFrameTime());
+    WrenInterpretResult result = wrenCall(vm, wren_draw_handle);
+}
+
 void interface_init(){
     WrenConfiguration config;
     wrenInitConfiguration(&config);
@@ -95,11 +115,9 @@ void interface_init(){
 
     wren_run_code(vm, "var game = Game.init()");
 
-    /*
     wren_update_handle = wrenMakeCallHandle(vm, "update(_)");
-    wren_render_handle = wrenMakeCallHandle(vm, "render(_)");
     wren_draw_handle = wrenMakeCallHandle(vm, "draw(_)");
     wrenEnsureSlots(vm, 1);
-    wrenGetVariable(vm, "main", "main", 0);
-    wren_main_handle = wrenGetSlotHandle(vm, 0);*/
+    wrenGetVariable(vm, "main", "game", 0);
+    wren_game_handle = wrenGetSlotHandle(vm, 0);
 }
