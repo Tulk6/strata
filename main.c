@@ -37,7 +37,9 @@ int main(){
         BeginTextureMode(render_target);
         
         interface_draw();
-        
+
+        //DrawCircle(0, 0, 10, RED);
+
         EndTextureMode();
 
         BeginDrawing();
