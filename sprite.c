@@ -14,7 +14,7 @@ void sprite_load(struct Sprite* sprite, int src_x, int src_y, int slice_width, i
 
 void sprite_foreign_allocate(WrenVM* vm){
     struct Sprite* sprite = (struct Sprite*)wrenSetSlotNewForeign(vm,
-                                            0, 0, sizeof(struct Sprite*));
+                                            0, 0, sizeof(struct Sprite));
     int src_x = wrenGetSlotDouble(vm, 1);
     int src_y = wrenGetSlotDouble(vm, 2);
     int slice_width = wrenGetSlotDouble(vm, 3);
