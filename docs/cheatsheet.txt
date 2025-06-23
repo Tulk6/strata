@@ -1,0 +1,24 @@
+## OBJECTS ##
+IMAGE 
+
+
+SPRITE
+.new() -> create a new sprite
+
+SOUND
+
+
+## STATIC ##
+GRAPHICS
+.draw_sprite() -> draw a sprite to the screen
+.clear_screen() -> clear entire screen
+
+PALETTE
+
+INPUT
+
+KEY
+
+AUDIO
+
+MATHS

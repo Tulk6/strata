@@ -22,7 +22,7 @@ class Key {
 class Graphics {
     foreign static draw_sprite(sprite, x, y, rotation) 
 
-    foreign static clear_screen()
+    foreign static clear_screen(colour)
 }
 
 foreign class Sprite {

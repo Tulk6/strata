@@ -9,6 +9,7 @@
 #include "sprite.c"
 
 //main functionality (static functions)
+#include "palette.c"
 #include "input.c"
 #include "graphics.c"
 #include "interface.c"
@@ -18,14 +19,13 @@ RenderTexture render_target;
 void window_init(){
     InitWindow(RENDER_WIDTH*WINDOW_SCALE, RENDER_HEIGHT*WINDOW_SCALE, "hight");
     SetTargetFPS(30);
+    render_target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
 }
 
 void engine_init(){
     window_init();
     graphics_init();
     interface_init();
-
-    render_target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
 }
 
 int main(){
@@ -38,8 +38,6 @@ int main(){
         
         interface_draw();
 
-        //DrawCircle(0, 0, 10, RED);
-
         EndTextureMode();
 
         BeginDrawing();
@@ -49,9 +47,4 @@ int main(){
         EndDrawing();
     }
     CloseWindow();
-
-    /*
-    ClearBackground(BLACK);
-        //DrawTexture(sprite.texture, 0, 0, WHITE);
-        graphics_draw_sprite(&sprite, x, y, x);*/
 }

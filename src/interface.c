@@ -17,7 +17,7 @@ void print_mult(WrenVM* vm){
 
 WrenForeignMethodFn foreign_methods(const char* signature){ 
     if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return graphics_foreign_draw_sprite;
-    if (!strcmp(signature, "static Graphics.clear_screen()")) return graphics_foreign_clear_screen;
+    if (!strcmp(signature, "static Graphics.clear_screen(_)")) return graphics_foreign_clear_screen;
 
     if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
     return NULL;
@@ -80,17 +80,21 @@ void wren_run_code(WrenVM* vm, char* code){
 }
 
 void interface_update(){
+    //printf("begin update\n");
     wrenEnsureSlots(vm, 2);
     wrenSetSlotHandle(vm, 0, wren_game_handle);
     wrenSetSlotDouble(vm, 1, (double)GetFrameTime());
     WrenInterpretResult result = wrenCall(vm, wren_update_handle);
+    //printf("end uipdate\n");
 }
 
 void interface_draw(){
+    //printf("begin intdraw\n");
     wrenEnsureSlots(vm, 2);
     wrenSetSlotHandle(vm, 0, wren_game_handle);
     wrenSetSlotDouble(vm, 1, (double)GetFrameTime());
     WrenInterpretResult result = wrenCall(vm, wren_draw_handle);
+    //printf("end intdraw\n");
 }
 
 void interface_init(){

@@ -19,7 +19,7 @@ class Game {
     }
 
     draw(delta) {
-        Graphics.clear_screen()
+        Graphics.clear_screen(0)
 
         Graphics.draw_sprite(_character, _character_pos.x, _character_pos.y, _character_rotation)
     }

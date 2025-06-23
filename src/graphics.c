@@ -32,10 +32,17 @@ void graphics_foreign_draw_sprite(WrenVM* vm){
     graphics_draw_sprite(sprite, x, y, rotation);
 }
 
+void graphics_clear_screen(int colour){
+    Color col = palette_get_colour(colour);
+    ClearBackground(col);
+}
+
 void graphics_foreign_clear_screen(WrenVM* vm){
-    ClearBackground(BLACK);
+    int colour = wrenGetSlotDouble(vm, 1);
+    graphics_clear_screen(colour);
 }
 
 void graphics_init(){
     graphics_load_atlas("sprite.png");
+    palette_load_default();
 }

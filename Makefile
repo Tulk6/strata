@@ -8,8 +8,8 @@ TARGET = main.exe
 
 LIBS = -lraylib -lwinmm -lgdi32
 
-SRC = main.c
-MODS = graphics.c interface.c sprite.c input.c engine.wren game.wren
+SRC = src/main.c
+MODS = src/graphics.c src/interface.c src/sprite.c src/input.c src/palette.c
 
 all: $(TARGET)
 
