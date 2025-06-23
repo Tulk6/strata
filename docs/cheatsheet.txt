@@ -10,12 +10,13 @@ SOUND
 
 ## STATIC ##
 GRAPHICS
-.draw_sprite() -> draw a sprite to the screen
+.draw_sprite(sprite) -> draw a sprite to the screen
 .clear_screen() -> clear entire screen
 
-PALETTE
-
 INPUT
+.key_down() -> check if key is held
+.key_pressed() -> check if key has been pressed
+.get_axis() -> map -1 to 1 for 2 keys
 
 KEY
 
