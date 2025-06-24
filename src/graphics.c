@@ -87,14 +87,18 @@ void graphics_load_font_image(char* path, char* characters){
     int end = 0;
     printf("%i\n", GetImageColor(img, 0, 0).r);
     for (int i=0;i<strlen(characters); i++){
-        printf("%i\n", i);
+        //printf("%i\n", i);
         end = get_next_char(&img, start)-2;
         char c = characters[i];
 
         int descender = 0;
 
-        if (c=='g' | c=='j' | c=='p' | c=='q' | c=='y'){
+        if (c=='g' | c=='p' | c=='q' | c=='y'){
             descender = 4;
+        }else if (c==';' | c==','){
+            descender = 1;
+        }else if (c=='j'){
+            descender = 2;
         }
         
         printf("############ %i -> %i\n", start, end);
@@ -116,7 +120,10 @@ void graphics_load_font_image(char* path, char* characters){
 }
 
 void graphics_init(){
-    graphics_load_font_image("res/font.png", "abcdefghijklmnopqrstuvwxyz");
+    graphics_load_font_image("res/font.png", "abcdefghijklmnopqrstuvwxyz"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "1234567890"
+        ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><");
     graphics_load_atlas("res/sprite.png");
     graphics_load_default_font();
     palette_load_default();
