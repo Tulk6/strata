@@ -1,14 +1,28 @@
 class Input {
-    foreign static is_key_down(key_code)
+    foreign static key_down(key_code)
+
+    foreign static key_pressed(key_code)
 
     static get_axis(neg_key, pos_key) {
-        var neg_int = Input.is_key_down(neg_key) ? -1 : 0
-        var pos_int = Input.is_key_down(pos_key) ?  1 : 0
+        var neg_int = Input.key_down(neg_key) ? -1 : 0
+        var pos_int = Input.key_down(pos_key) ?  1 : 0
         return neg_int+pos_int
     }
+
+    static get_axis_pressed(neg_key, pos_key) {
+        var neg_int = Input.key_pressed(neg_key) ? -1 : 0
+        var pos_int = Input.key_pressed(pos_key) ?  1 : 0
+        return neg_int+pos_int
+    }
+
+    foreign static get_char()
 }
 
 class Key {
+    static backspace {259}
+    static delete {261}
+    static enter {257}
+    static tab {258}
     static left {263}
     static right {262}
     static up {265}

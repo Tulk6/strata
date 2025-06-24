@@ -1,28 +1,68 @@
 class Game {
     construct init() {
-        _character = Sprite.new(0, 0, 16, 16, 10)
-        _character_pos = Vector2.new(100, 100)
-        _character_rotation = 0
-        _character_speed = 100
-        _character_turn_rate = 10
+        _code = ""
+        _cursor_index = 0
+    }
+
+    insert_at_cursor(char){
+        if (_code.count == 0){
+            _code = char
+        }else{
+            _code = _code[0.._cursor_index]+char+_code[_cursor_index+1..-1]
+        }
+    }
+
+    edit_text(){
+        var char = Input.get_char()
+        if (char != ""){
+            this.insert_at_cursor(char)
+            _cursor_index = _cursor_index + 1
+        }
+
+        if (Input.key_pressed(Key.enter)){
+            this.insert_at_cursor("\n")
+            _cursor_index = _cursor_index + 1
+        }
+
+        if (Input.key_pressed(Key.tab)){
+            this.insert_at_cursor("\t")
+            _cursor_index = _cursor_index + 1
+        }
+        
+        if (Input.key_pressed(Key.backspace)){
+            if (_code.count > 1){
+                _code = _code[0..-2]
+            }else{
+                _code = ""
+            }
+            _cursor_index = _cursor_index - 1
+        }
+
+        if (Input.key_pressed(Key.up)){
+
+        }
+
+        _cursor_index = _cursor_index+Input.get_axis_pressed(Key.left, Key.right)
+        
+        _cursor_index = _cursor_index.clamp(0, _code.count-1)
     }
 
     update(delta) {
-        /*_character_x = _character_x + ()
-        _character_y = _character_y + (Input.get_axis(Key.up, Key.down))*/
-        _character_rotation = _character_rotation + Input.get_axis(Key.left, Key.right)*_character_turn_rate
-        var step = Vector2.new(0,0)
-        step.x = Maths.cos(_character_rotation)*Input.get_axis(Key.down, Key.up)
-        step.y = Maths.sin(_character_rotation)*Input.get_axis(Key.down, Key.up)
-        step = step * (delta * _character_speed)
-        _character_pos = _character_pos + step
+        this.edit_text()
     }
 
     draw(delta) {
-        Graphics.clear_screen(6)
-
-        Graphics.draw_sprite(_character, _character_pos.x, _character_pos.y, _character_rotation)
-
-        Graphics.draw_text("hello", 0, 0)
+        Graphics.clear_screen(19)
+        var disp_code
+        if (_code.count > 0){
+            disp_code = _code[0.._cursor_index]+"|"+_code[_cursor_index+1..-1]
+        }else{
+            disp_code = "|"
+        }
+        var lines = disp_code.split("\n")
+        for (i in 0...lines.count){
+            var line = lines[i]
+            Graphics.draw_text(line, 0, i*10)
+        }
     }
 }

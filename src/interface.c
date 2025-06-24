@@ -20,7 +20,9 @@ WrenForeignMethodFn foreign_methods(const char* signature){
     if (!strcmp(signature, "static Graphics.clear_screen(_)")) return graphics_foreign_clear_screen;
     if (!strcmp(signature, "static Graphics.draw_text(_,_,_)")) return graphics_foreign_draw_text;
 
-    if (!strcmp(signature, "static Input.is_key_down(_)")) return input_foreign_key_down;
+    if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
+    if (!strcmp(signature, "static Input.key_pressed(_)")) return input_foreign_key_pressed;
+    if (!strcmp(signature, "static Input.get_char()")) return input_foreign_get_char;
     return NULL;
 }
 
