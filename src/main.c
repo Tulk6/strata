@@ -12,6 +12,7 @@
 #include "palette.c"
 #include "input.c"
 #include "graphics.c"
+#include "engine.c"
 #include "interface.c"
 
 RenderTexture render_target;
@@ -22,21 +23,26 @@ void window_init(){
     render_target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
 }
 
-void engine_init(){
+void main_init(){
     window_init();
     graphics_init();
     interface_init();
+    engine_init();
 }
 
 int main(){
-    engine_init();
+    main_init();
     
     while (!WindowShouldClose()){
-        interface_update();
-    
         BeginTextureMode(render_target);
         
-        interface_draw();
+        if (global_engine_mode == ENGINE_MODE_RUN){
+            interface_update();
+            interface_draw();
+        }else if (global_engine_mode == ENGINE_MODE_EDIT){
+            engine_update();
+            engine_draw();
+        }
 
         EndTextureMode();
 

@@ -52,13 +52,15 @@ class Game {
     }
 
     draw(delta) {
-        Graphics.clear_screen(19)
+        Graphics.set_draw_colour(6)
+        Graphics.clear_screen()
         var disp_code
         if (_code.count > 0){
             disp_code = _code[0.._cursor_index]+"|"+_code[_cursor_index+1..-1]
         }else{
             disp_code = "|"
         }
+        Graphics.set_draw_colour(19)
         var lines = disp_code.split("\n")
         for (i in 0...lines.count){
             var line = lines[i]

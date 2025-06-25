@@ -11,6 +11,8 @@ struct Atlas global_atlas;
 
 Font global_font;
 
+Color global_draw_colour;
+
 void graphics_load_atlas(char* path){
     global_atlas.image = LoadImage(path);
     global_atlas.texture = LoadTextureFromImage(global_atlas.image);
@@ -35,7 +37,7 @@ void graphics_foreign_draw_sprite(WrenVM* vm){
 }
 
 void graphics_draw_text(char* text, int x, int y){
-    DrawTextEx(global_font, text, (Vector2){x, y}, 9, 1, WHITE);
+    DrawTextEx(global_font, text, (Vector2){x, y}, 9, 1, global_draw_colour);
 }
 
 void graphics_foreign_draw_text(WrenVM* vm){
@@ -46,31 +48,35 @@ void graphics_foreign_draw_text(WrenVM* vm){
     graphics_draw_text(text, x, y);
 }
 
-void graphics_clear_screen(int colour){
-    Color col = palette_get_colour(colour);
-    ClearBackground(col);
+void graphics_clear_screen(){
+    ClearBackground(global_draw_colour);
 }
 
 void graphics_foreign_clear_screen(WrenVM* vm){
-    int colour = wrenGetSlotDouble(vm, 1);
-    graphics_clear_screen(colour);
+    graphics_clear_screen();
 }
 
-void graphics_load_default_font(){
-    //global_font = LoadFont("res/GEORGIA.ttf");//LoadFontEx("res/GEORGIA.ttf", 10, NULL, 0);
-    //global_font = LoadFontEx("res/Dina_r700-10.bdf", 10, NULL, 0);
+void graphics_set_draw_colour(int index){
+    global_draw_colour = palette_get_colour(index);
+}
+
+void graphics_foreign_set_draw_colour(WrenVM* vm){
+    int colour_index = wrenGetSlotDouble(vm, 1);
+    graphics_set_draw_colour(colour_index);
 }
 
 int get_next_char(Image* img, int x){
+    Color key_colour = (Color){255, 0, 0, 255};
     int j = x;
     while (j<img->width){
         j += 1;
         //printf("j: %i\n", j);
-        if (GetImageColor(*img, j, 0).r == 255){
+        if (ColorIsEqual(GetImageColor(*img, j, 0), key_colour)){
             x = j+1;
             return x;
         }
     }
+    return x;
 }
 
 void graphics_load_font_image(char* path, char* characters){
@@ -85,7 +91,7 @@ void graphics_load_font_image(char* path, char* characters){
 
     int start = 0;
     int end = 0;
-    printf("%i\n", GetImageColor(img, 0, 0).r);
+    //printf("%i\n", GetImageColor(img, 0, 0).r);
     for (int i=0;i<strlen(characters); i++){
         //printf("%i\n", i);
         end = get_next_char(&img, start)-2;
@@ -101,29 +107,30 @@ void graphics_load_font_image(char* path, char* characters){
             descender = 2;
         }
         
-        printf("############ %i -> %i\n", start, end);
+        //printf("############ %i -> %i\n", start, end);
         Rectangle tmp_rec = (Rectangle){start, 0, end-start+1, img.height};
         Image tmp_img = ImageFromImage(img, tmp_rec);
         global_font.recs[i] = tmp_rec;
         
         global_font.glyphs[i] = (GlyphInfo){c, 0, descender, 0, tmp_img};
-        
-
-        ExportImage(tmp_img, "out.png");
 
         start = end+2;
         if (start>=img.width) break;
     }
 
     UnloadImage(img);
-    printf("here!");
 }
 
-void graphics_init(){
+void graphics_load_default_font(){
     graphics_load_font_image("res/font.png", "abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "1234567890"
         ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><");
+    //global_font = LoadFont("res/GEORGIA.ttf");//LoadFontEx("res/GEORGIA.ttf", 10, NULL, 0);
+    //global_font = LoadFontEx("res/Dina_r700-10.bdf", 10, NULL, 0);
+}
+
+void graphics_init(){
     graphics_load_atlas("res/sprite.png");
     graphics_load_default_font();
     palette_load_default();

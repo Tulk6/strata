@@ -19,6 +19,7 @@ class Input {
 }
 
 class Key {
+    static f5 {294}
     static backspace {259}
     static delete {261}
     static enter {257}
@@ -36,9 +37,11 @@ class Key {
 class Graphics {
     foreign static draw_sprite(sprite, x, y, rotation) 
 
-    foreign static clear_screen(colour)
+    foreign static clear_screen()
 
     foreign static draw_text(text, x, y)
+
+    foreign static set_draw_colour(col)
 }
 
 foreign class Sprite {

@@ -16,9 +16,12 @@ void print_mult(WrenVM* vm){
 }
 
 WrenForeignMethodFn foreign_methods(const char* signature){ 
+    //if (!strcmp(signature, "static Engine.load_game(_)")) return interface_foreign_load_game;
+
     if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return graphics_foreign_draw_sprite;
-    if (!strcmp(signature, "static Graphics.clear_screen(_)")) return graphics_foreign_clear_screen;
+    if (!strcmp(signature, "static Graphics.clear_screen()")) return graphics_foreign_clear_screen;
     if (!strcmp(signature, "static Graphics.draw_text(_,_,_)")) return graphics_foreign_draw_text;
+    if (!strcmp(signature, "static Graphics.set_draw_colour(_)")) return graphics_foreign_set_draw_colour;
 
     if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
     if (!strcmp(signature, "static Input.key_pressed(_)")) return input_foreign_key_pressed;
