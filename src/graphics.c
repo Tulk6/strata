@@ -10,6 +10,8 @@ struct Atlas {
 struct Atlas global_atlas;
 
 Font global_font;
+int global_font_width = 5;
+int global_font_height = 9;
 
 Color global_draw_colour;
 

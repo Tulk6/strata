@@ -23,6 +23,7 @@ RenderTexture render_target;
 void window_init(){
     InitWindow(RENDER_WIDTH*WINDOW_SCALE, RENDER_HEIGHT*WINDOW_SCALE, "hight");
     SetTargetFPS(30);
+    SetExitKey(KEY_NULL);
     render_target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
 }
 
@@ -39,6 +40,12 @@ int main(){
     while (!WindowShouldClose()){
         BeginTextureMode(render_target);
         
+        if (IsKeyPressed(KEY_F5)){
+            engine_run_game();
+        }
+        if (IsKeyPressed(KEY_ESCAPE)){
+            global_engine_mode = ENGINE_MODE_EDIT;
+        }
         if (global_engine_mode == ENGINE_MODE_RUN){
             interface_update();
             interface_draw();
