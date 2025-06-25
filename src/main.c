@@ -3,8 +3,11 @@
 #define WINDOW_SCALE 2
 
 #include "raylib.h"
-#include "wren.c"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 
+#include "raymath.h"
+#include "wren.c"
 //wren foreign objects 
 #include "sprite.c"
 
@@ -12,8 +15,8 @@
 #include "palette.c"
 #include "input.c"
 #include "graphics.c"
-#include "engine.c"
 #include "interface.c"
+#include "engine.c"
 
 RenderTexture render_target;
 

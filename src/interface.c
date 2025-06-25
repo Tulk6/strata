@@ -1,4 +1,4 @@
-WrenVM* vm;
+WrenVM* vm = NULL;
 
 WrenHandle* wren_update_handle;
 WrenHandle* wren_draw_handle;
@@ -103,7 +103,8 @@ void interface_draw(){
     //printf("end intdraw\n");
 }
 
-void interface_init(){
+void interface_new_vm(){
+    if (vm != NULL) wrenFreeVM(vm);
     WrenConfiguration config;
     wrenInitConfiguration(&config);
         config.writeFn = &write_fn;
@@ -114,20 +115,33 @@ void interface_init(){
         /*config.loadModuleFn = &load_module_fn;*/
 
     vm = wrenNewVM(&config);
+}
 
+void interface_load_engine(){
     char* engine_objects_str = LoadFileText("res/engine.wren");
     wren_run_code(vm, engine_objects_str);
     UnloadFileText(engine_objects_str);
+}
 
-    char* main_str = LoadFileText("res/game.wren");
-    wren_run_code(vm, main_str);
-    UnloadFileText(main_str);
-
-    wren_run_code(vm, "var game = Game.init()");
-
+void interface_get_handles(){
     wren_update_handle = wrenMakeCallHandle(vm, "update(_)");
     wren_draw_handle = wrenMakeCallHandle(vm, "draw(_)");
     wrenEnsureSlots(vm, 1);
     wrenGetVariable(vm, "main", "game", 0);
     wren_game_handle = wrenGetSlotHandle(vm, 0);
+}
+
+void interface_load_game(char* code){
+    interface_new_vm();
+    interface_load_engine();
+
+    wren_run_code(vm, code);
+
+    wren_run_code(vm, "var game = Game.init()");
+
+    interface_get_handles();
+}
+
+void interface_init(){
+
 }

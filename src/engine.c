@@ -3,41 +3,60 @@ enum {
     ENGINE_MODE_RUN,
 };
 
-struct EditorCode{
+struct TextEdit{
     char* text;
-    int length;
+    int size;
     int cursor;
 };
 
 int global_engine_mode = ENGINE_MODE_EDIT;
 
-struct EditorCode editor_code;
+struct TextEdit text_edit;
+//char text[1000]= "hi\nhello!";
+//bool edit_mode = false;
 
 void engine_init(){
-    editor_code.length = 6;
-    editor_code.text = malloc(6);
-    strcpy(editor_code.text, "hello");
-    editor_code.cursor = 2;
+    text_edit.text = malloc(2);
+    text_edit.text[0] = 0;
+    text_edit.size = 2;
+    text_edit.cursor = 0;
+}
+
+void engine_move_cursor(int i){
+    text_edit.cursor = Clamp(text_edit.cursor+i, 0, text_edit.size-1);
 }
 
 void engine_insert_at_cursor(char chr){
-    char* before_cursor = malloc(editor_code.cursor+2);
-    strncpy(before_cursor, editor_code.text, editor_code.cursor);
-    before_cursor[editor_code.cursor] = chr;
-    before_cursor[editor_code.cursor+1] = '\0';
+    //if (text_edit.cursor)
+    //NEEDS REVIEW TO DECREASE NUMBER OF REALLOCS
+    char* before_cursor = malloc(text_edit.cursor+2);
+    strncpy(before_cursor, text_edit.text, text_edit.cursor);
+    before_cursor[text_edit.cursor] = chr;
+    before_cursor[text_edit.cursor+1] = '\0';
 
-    char* after_cursor = malloc(editor_code.length-editor_code.cursor);
-    strcpy(after_cursor, &editor_code.text[editor_code.cursor]);
+    char* after_cursor = malloc(text_edit.size-text_edit.cursor);
+    strcpy(after_cursor, &text_edit.text[text_edit.cursor]);
 
-    editor_code.length += 1;
-    char* code_buffer = realloc(editor_code.text, editor_code.length);
+    text_edit.size += 1;
+    char* code_buffer = malloc(text_edit.size);
     if (code_buffer == NULL) exit(-1);
-    editor_code.text = code_buffer;
-    strcpy(editor_code.text, before_cursor);
-    strcat(editor_code.text, after_cursor);
+    free(text_edit.text);
+    text_edit.text = code_buffer;
+    strcpy(text_edit.text, before_cursor);
+    strcat(text_edit.text, after_cursor);
+
+    engine_move_cursor(1);
 
     free(before_cursor);
     free(after_cursor);
+}
+
+void engine_backspace_at_cursor(){
+    printf("cursor: %i", text_edit.cursor);
+    for (int i=text_edit.cursor-1;i<text_edit.size-2;i++){
+        text_edit.text[i] = text_edit.text[i+1];
+    }
+    engine_move_cursor(-1);
 }
 
 void engine_update(){
@@ -45,9 +64,27 @@ void engine_update(){
     if (chr != 0){
         engine_insert_at_cursor(chr);
     }
+    if (IsKeyPressed(KEY_BACKSPACE)){
+        engine_backspace_at_cursor();
+    }
+    if (IsKeyPressed(KEY_ENTER)){
+        engine_insert_at_cursor('\n');
+    }
+    if (IsKeyPressed(KEY_TAB)){
+        engine_insert_at_cursor('\t');
+    }
+
+    if (IsKeyPressed(KEY_F5)){
+        interface_load_game(text_edit.text);
+        global_engine_mode = ENGINE_MODE_RUN;
+    }
 }
 
 void engine_draw(){
     ClearBackground(WHITE);
-    DrawText(editor_code.text, 0, 0, 9, BLACK);
+    DrawTextEx(global_font, text_edit.text, (Vector2){0, 0}, 9, 1, BLACK);
+    //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
+    //GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);
+    //if (GuiTextBox((Rectangle){0,10,RENDER_WIDTH,RENDER_HEIGHT-10}, text, 1000, edit_mode)) edit_mode = !edit_mode;
+
 }
