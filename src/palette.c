@@ -5,13 +5,13 @@ struct Palette{
 struct Palette global_palette;
 
 void palette_set_colour(int i, Color colour){
-    if (i>=0 & i<32){
+    if ((i>=0) & (i<32)){
         global_palette.colours[i] = colour;
     }
 }
 
 Color palette_get_colour(int i){
-    if (i>=0 & i<32){    
+    if ((i>=0) & (i<32)){    
         return global_palette.colours[i];
     }else{
         return (Color){0,0,0,0};
