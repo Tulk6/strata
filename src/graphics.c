@@ -102,7 +102,7 @@ void graphics_load_font_image(char* path, char* characters){
         int descender = 0;
 
         if ((c=='g') | (c=='p') | (c=='q') | (c=='y')){
-            descender = 4;
+            descender = 3;
         }else if ((c==';') | (c==',')){
             descender = 1;
         }else if (c=='j'){
@@ -124,7 +124,7 @@ void graphics_load_font_image(char* path, char* characters){
 }
 
 void graphics_load_default_font(){
-    graphics_load_font_image("res/font.png", "abcdefghijklmnopqrstuvwxyz"
+    graphics_load_font_image("res/font_short.png", "abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "1234567890"
         ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><");
@@ -136,4 +136,10 @@ void graphics_init(){
     graphics_load_atlas("res/sprite.png");
     graphics_load_default_font();
     palette_load_default();
+}
+
+void graphics_close(){
+    UnloadImage(global_atlas.image);
+    UnloadTexture(global_atlas.texture);
+    UnloadFont(global_font);
 }

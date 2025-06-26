@@ -34,6 +34,18 @@ void main_init(){
     engine_init();
 }
 
+void window_close(){
+    UnloadRenderTexture(render_target);
+    CloseWindow();
+}
+
+void main_close(){
+    graphics_close();
+    interface_close();
+    engine_close();
+    window_close();
+}
+
 int main(){
     main_init();
     
@@ -62,5 +74,5 @@ int main(){
                                         (Vector2){0,0}, 0, WHITE);
         EndDrawing();
     }
-    CloseWindow();
+    main_close();
 }

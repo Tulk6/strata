@@ -23,6 +23,8 @@ int global_engine_mode = ENGINE_MODE_EDIT;
 struct TextBlock text_edit;
 struct TextCursor global_cursor;
 
+char* text_edit_str = NULL;
+
 //char text[1000]= "hi\nhello!";
 //bool edit_mode = false;
 
@@ -138,9 +140,7 @@ void engine_backspace_at_cursor(){
 }
 
 void engine_newline_at_cursor(){
-    if (global_cursor.row >= text_edit.size-1){
-        ensure_text_edit_lines(text_edit.size*1.5);
-    }
+    ensure_text_edit_lines(text_edit.size+1);
 
     struct TextLine* current = &text_edit.lines[global_cursor.row];
     int cursor_pos = global_cursor.column;
@@ -180,21 +180,47 @@ void engine_update(){
     }
 }
 
+void engine_get_str(){
+    int size = 1;
+    for (int i=0;i<text_edit.size;i++){
+        size += strlen(text_edit.lines[i].text)+1; //+1 for newlines too
+    }
+    
+    free(text_edit_str);
+    text_edit_str = malloc(size);
+    text_edit_str[0] = '\0';
+    for (int i=0;i<text_edit.size;i++){
+        strcat(text_edit_str, text_edit.lines[i].text);
+        text_edit_str[strlen(text_edit_str)+1] = '\0';
+        text_edit_str[strlen(text_edit_str)] = '\n';
+    } 
+}
+
 void engine_run_game(){
-    //interface_load_game(text_edit.text);
+    engine_get_str();
+    printf("%s", text_edit_str);
+    interface_load_game(text_edit_str);
     global_engine_mode = ENGINE_MODE_RUN;
 }
 
 void engine_draw(){
     ClearBackground(WHITE);
     for (int i=0;i<text_edit.size;i++){
-        DrawTextEx(global_font, text_edit.lines[i].text, (Vector2){0, 10*i}, 9, 1, BLACK);
+        DrawTextEx(global_font, text_edit.lines[i].text, (Vector2){0, (global_font.baseSize+1)*i}, 8, 1, BLACK);
     }
 
-    DrawRectangle(global_cursor.column*6, global_cursor.row*10, 1, 10, RED);
+    DrawRectangle(global_cursor.column*6, (global_font.baseSize+1)*global_cursor.row, 1, 10, RED);
 
     //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
     //GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);
     //if (GuiTextBox((Rectangle){0,10,RENDER_WIDTH,RENDER_HEIGHT-10}, text, 1000, edit_mode)) edit_mode = !edit_mode;
 
+}
+
+void engine_close(){
+    for (int i=0;i<text_edit.size;i++){
+        free(text_edit.lines[i].text);
+    }
+    free(text_edit.lines);
+    free(text_edit_str);
 }

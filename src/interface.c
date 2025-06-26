@@ -145,3 +145,9 @@ void interface_load_game(char* code){
 void interface_init(){
 
 }
+
+void interface_close(){
+    if (vm != NULL){
+        wrenFreeVM(vm);
+    }
+}
