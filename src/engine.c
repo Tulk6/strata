@@ -28,6 +28,16 @@ char* text_edit_str = NULL;
 //char text[1000]= "hi\nhello!";
 //bool edit_mode = false;
 
+int get_line_length(int i){
+    if ((i<0) | (i>text_edit.size)) return 0;
+    return strlen(text_edit.lines[i].text);
+}
+
+void engine_set_cursor(int column, int row){
+    global_cursor.row = Clamp(row, 0, text_edit.size-1);
+    global_cursor.column = Clamp(column, 0, get_line_length(global_cursor.row));
+}
+
 void ensure_text_line_length(struct TextLine* line, int size){
     //printf("GROWING STRING %i\n", size);
     if (size>line->size){
@@ -46,7 +56,7 @@ void grow_text_line(struct TextLine* line, int size){
 void init_text_line(struct TextLine* line){
     line->text = NULL;
     line->size = 0;
-    ensure_text_line_length(line, 6);
+    ensure_text_line_length(line, 16);
     line->text[0] = '\0';
 }
 
@@ -61,23 +71,40 @@ void ensure_text_edit_lines(int n_lines){
     }
 }
 
+void engine_clear_text(){
+    engine_set_cursor(0,0);
+    for (int i=0;i<text_edit.size;i++){
+        text_edit.lines[i].text[0] = '\0';
+    }
+}
+
 void engine_init(){
     ensure_text_edit_lines(2);
-    strcpy(text_edit.lines[0].text, "hello");
+    //strcpy(text_edit.lines[0].text, "hello");
 }
 
-int get_line_length(int i){
-    if ((i<0) | (i>text_edit.size)) return 0;
-    return strlen(text_edit.lines[i].text);
-}
+void engine_load_text(char* text){
+    engine_clear_text();
 
-void engine_set_cursor(int column, int row){
-    global_cursor.row = Clamp(row, 0, text_edit.size-1);
-    global_cursor.column = Clamp(column, 0, get_line_length(global_cursor.row));
+    char* token = strtok(text, "\n");
+    int i = 0;
+    while (token != NULL){
+        printf("%i..\n", i);
+        ensure_text_edit_lines(i+1);
+        printf("tok: %s\n", token);
+        struct TextLine* line = &text_edit.lines[i];
+
+        ensure_text_line_length(line, strlen(token)+1);
+        strcpy(line->text, token);
+        printf("%s\n", token);
+
+        token = strtok(NULL, "\n");
+        i++;
+    }
 }
 
 void engine_move_cursor(int column, int row){
-    printf("row: %i column: %i\n", row, column);
+    //printf("row: %i column: %i\n", row, column);
     int temp_column = global_cursor.column+column;
     if (temp_column<0){
         engine_set_cursor(get_line_length(global_cursor.row-1), global_cursor.row-1);
@@ -215,6 +242,24 @@ void engine_draw(){
     //GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);
     //if (GuiTextBox((Rectangle){0,10,RENDER_WIDTH,RENDER_HEIGHT-10}, text, 1000, edit_mode)) edit_mode = !edit_mode;
 
+}
+
+void engine_export(){
+    engine_get_str();
+    char* out_text = NULL;
+    out_text = malloc(strlen(text_edit_str)+2);
+    strcpy(out_text, text_edit_str);
+    out_text[strlen(out_text)+1] = '\0';
+    out_text[strlen(out_text)] = (char)31;
+    SaveFileText("out.txt", out_text);
+    free(out_text);
+}
+
+void engine_import(char* path){
+    char* file = LoadFileText(path);
+    engine_load_text(file);
+
+    free(file);
 }
 
 void engine_close(){

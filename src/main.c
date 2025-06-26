@@ -51,6 +51,11 @@ int main(){
     
     while (!WindowShouldClose()){
         BeginTextureMode(render_target);
+
+        if (IsKeyPressed(KEY_F4)){
+            engine_import("out.txt");
+            //engine_export();
+        }
         
         if (IsKeyPressed(KEY_F5)){
             engine_run_game();
