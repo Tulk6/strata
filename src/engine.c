@@ -1,5 +1,14 @@
+#define BG_COLOUR CLITERAL(Color){255, 238, 204, 255}
+#define FG_COLOUR CLITERAL(Color){70, 66, 94, 255}
+#define AC_COLOUR CLITERAL(Color){255, 105, 115, 255}
+#define IN_COLOUR CLITERAL(Color){255, 176, 163, 255}
+
 enum {
-    ENGINE_MODE_EDIT,
+    ENGINE_MODE_CODE,
+    ENGINE_MODE_SPRITE,
+    ENGINE_MODE_SOUND,
+    ENGINE_MODE_MUSIC,
+    ENGINE_MODE_MAP,
     ENGINE_MODE_RUN,
 };
 
@@ -18,12 +27,17 @@ struct TextCursor{
     int column;
 };
 
-int global_engine_mode = ENGINE_MODE_EDIT;
+int global_engine_mode = ENGINE_MODE_CODE;
 
 struct TextBlock text_edit;
 struct TextCursor global_cursor;
 
 char* text_edit_str = NULL;
+
+int f_size;
+int line_spacing;
+int left_margin;
+int top_bar_height;
 
 //char text[1000]= "hi\nhello!";
 //bool edit_mode = false;
@@ -79,6 +93,11 @@ void engine_clear_text(){
 }
 
 void engine_init(){
+    f_size = global_font.baseSize;
+    line_spacing = 4;
+    left_margin = 3;
+    top_bar_height = 11;
+
     ensure_text_edit_lines(2);
     //strcpy(text_edit.lines[0].text, "hello");
 }
@@ -86,9 +105,46 @@ void engine_init(){
 void engine_load_text(char* text){
     engine_clear_text();
 
-    char* token = strtok(text, "\n");
+    char* start = text;
+    char* ptr = text;
     int i = 0;
-    while (token != NULL){
+
+    while (*ptr){
+        if (*ptr == '\n'){
+            int len = ptr-start;
+            char* line = malloc(len+1);
+            memcpy(line, start, len);
+            line[len] = '\0';
+            
+            //printf("%s (%i)\n", line, i);
+            ensure_text_edit_lines(i+1);
+            struct TextLine* text_line = &text_edit.lines[i];
+            ensure_text_line_length(text_line, len+1);
+            strcpy(text_line->text, line);
+
+            free(line);
+            start=ptr+1;
+            i++;
+        }
+        ptr++;
+    }
+
+    if (ptr != start) {
+        size_t len = ptr - start;
+        char *line = malloc(len + 1);
+        memcpy(line, start, len);
+        line[len] = '\0';
+
+        ensure_text_edit_lines(i+1);
+        struct TextLine* text_line = &text_edit.lines[i];
+        ensure_text_line_length(text_line, len);
+        strcpy(text_line->text, line);
+        memcpy(line, start, len);
+
+        free(line);
+    }
+
+    /*while (token != NULL){
         printf("%i..\n", i);
         ensure_text_edit_lines(i+1);
         printf("tok: %s\n", token);
@@ -100,7 +156,7 @@ void engine_load_text(char* text){
 
         token = strtok(NULL, "\n");
         i++;
-    }
+    }*/
 }
 
 void engine_move_cursor(int column, int row){
@@ -181,7 +237,30 @@ void engine_newline_at_cursor(){
     engine_set_cursor(0, global_cursor.row+1);
 }
 
-void engine_update(){
+void engine_get_str(){
+    int size = 1;
+    for (int i=0;i<text_edit.size;i++){
+        size += strlen(text_edit.lines[i].text)+1; //+1 for newlines too
+    }
+    
+    free(text_edit_str);
+    text_edit_str = malloc(size);
+    text_edit_str[0] = '\0';
+    for (int i=0;i<text_edit.size;i++){
+        strcat(text_edit_str, text_edit.lines[i].text);
+        text_edit_str[strlen(text_edit_str)+1] = '\0';
+        text_edit_str[strlen(text_edit_str)] = '\n';
+    } 
+}
+
+void engine_run_game(){
+    engine_get_str();
+    printf("%s", text_edit_str);
+    interface_load_game(text_edit_str);
+    global_engine_mode = ENGINE_MODE_RUN;
+}
+
+void engine_update_code(){
     char chr = GetCharPressed();
     if (chr != 0){
         engine_insert_at_cursor(chr);
@@ -207,41 +286,49 @@ void engine_update(){
     }
 }
 
-void engine_get_str(){
-    int size = 1;
-    for (int i=0;i<text_edit.size;i++){
-        size += strlen(text_edit.lines[i].text)+1; //+1 for newlines too
+void engine_update(){
+    if (IsKeyPressed(KEY_GRAVE)){
+        global_engine_mode += 1;
+        global_engine_mode = global_engine_mode%3;
     }
-    
-    free(text_edit_str);
-    text_edit_str = malloc(size);
-    text_edit_str[0] = '\0';
-    for (int i=0;i<text_edit.size;i++){
-        strcat(text_edit_str, text_edit.lines[i].text);
-        text_edit_str[strlen(text_edit_str)+1] = '\0';
-        text_edit_str[strlen(text_edit_str)] = '\n';
-    } 
+    switch (global_engine_mode){
+        case ENGINE_MODE_CODE:
+            engine_update_code();
+            break;
+    }
 }
 
-void engine_run_game(){
-    engine_get_str();
-    printf("%s", text_edit_str);
-    interface_load_game(text_edit_str);
-    global_engine_mode = ENGINE_MODE_RUN;
+void engine_draw_code(){
+    //DrawR
+
+    for (int i=0;i<text_edit.size;i++){
+        DrawTextEx(global_font, text_edit.lines[i].text, (Vector2){left_margin, ((f_size+line_spacing)*i+top_bar_height+2)}, 8, 1, FG_COLOUR);
+        //DrawTextEx(global_font, TextFormat("%i", i), (Vector2){0, (global_font.baseSize+4)*i+5}, 8, 1, RED);
+    }
+
+    DrawRectangle(global_cursor.column*6+left_margin-1, (f_size+line_spacing)*global_cursor.row+top_bar_height, 1, 13, AC_COLOUR);
+}
+
+void engine_draw_bar(){
+    ClearBackground(WHITE);
+    DrawRectangle(0, 0, RENDER_WIDTH, top_bar_height, AC_COLOUR);
+    DrawRectangleRounded((Rectangle){2, 1, 80, top_bar_height+2}, 0.5, 2, BG_COLOUR);
+    DrawTextEx(global_font, "Code", (Vector2){8, 2}, 8, 1, FG_COLOUR);
+    DrawRectangleRounded((Rectangle){84, 2, 80, top_bar_height+2}, 0.5, 2, IN_COLOUR);
+    DrawRectangle(0, top_bar_height, RENDER_WIDTH, RENDER_HEIGHT, BG_COLOUR);
 }
 
 void engine_draw(){
-    ClearBackground(WHITE);
-    for (int i=0;i<text_edit.size;i++){
-        DrawTextEx(global_font, text_edit.lines[i].text, (Vector2){0, (global_font.baseSize+1)*i}, 8, 1, BLACK);
+    engine_draw_bar();
+    switch (global_engine_mode){
+        case ENGINE_MODE_CODE:
+            engine_draw_code();
+            break;
     }
-
-    DrawRectangle(global_cursor.column*6, (global_font.baseSize+1)*global_cursor.row, 1, 10, RED);
 
     //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
     //GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);
     //if (GuiTextBox((Rectangle){0,10,RENDER_WIDTH,RENDER_HEIGHT-10}, text, 1000, edit_mode)) edit_mode = !edit_mode;
-
 }
 
 void engine_export(){
@@ -258,7 +345,6 @@ void engine_export(){
 void engine_import(char* path){
     char* file = LoadFileText(path);
     engine_load_text(file);
-
     free(file);
 }
 

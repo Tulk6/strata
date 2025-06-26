@@ -41,9 +41,13 @@ void window_close(){
 
 void main_close(){
     graphics_close();
+    printf("gdone");
     interface_close();
+    printf("idone");
     engine_close();
+    printf("edone");
     window_close();
+    printf("wdone");
 }
 
 int main(){
@@ -52,21 +56,25 @@ int main(){
     while (!WindowShouldClose()){
         BeginTextureMode(render_target);
 
+        if (IsKeyPressed(KEY_F3)){
+            engine_import("res/game.wren");
+            //engine_export();1bB2345567
+        }
         if (IsKeyPressed(KEY_F4)){
-            engine_import("out.txt");
-            //engine_export();
+            //engine_import("out.txt");
+            engine_export();
         }
         
         if (IsKeyPressed(KEY_F5)){
             engine_run_game();
         }
         if (IsKeyPressed(KEY_ESCAPE)){
-            global_engine_mode = ENGINE_MODE_EDIT;
+            global_engine_mode = ENGINE_MODE_CODE;
         }
         if (global_engine_mode == ENGINE_MODE_RUN){
             interface_update();
             interface_draw();
-        }else if (global_engine_mode == ENGINE_MODE_EDIT){
+        }else{
             engine_update();
             engine_draw();
         }

@@ -105,7 +105,7 @@ void graphics_load_font_image(char* path, char* characters){
             descender = 3;
         }else if ((c==';') | (c==',')){
             descender = 1;
-        }else if (c=='j'){
+        }else if ((c=='j') | (c=='3') | (c=='4') | (c=='5') | (c=='7') | (c=='9')){
             descender = 2;
         }
         
