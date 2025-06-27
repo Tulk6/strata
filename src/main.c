@@ -16,6 +16,7 @@
 #include "input.c"
 #include "graphics.c"
 #include "interface.c"
+#include "writer.c"
 #include "engine.c"
 
 RenderTexture render_target;
