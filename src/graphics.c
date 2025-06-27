@@ -8,6 +8,7 @@ struct Atlas {
 };
 
 struct Atlas global_atlas;
+struct Atlas global_icons;
 
 Font global_font;
 int global_font_width = 5;
@@ -15,9 +16,14 @@ int global_font_height = 9;
 
 Color global_draw_colour;
 
-void graphics_load_atlas(char* path){
-    global_atlas.image = LoadImage(path);
-    global_atlas.texture = LoadTextureFromImage(global_atlas.image);
+void graphics_load_atlas(struct Atlas* atlas, char* path){
+    atlas->image = LoadImage(path);
+    atlas->texture = LoadTextureFromImage(atlas->image);
+}
+
+void graphics_unload_atlas(struct Atlas* atlas){
+    UnloadTexture(atlas->texture);
+    UnloadImage(atlas->image);
 }
 
 void graphics_draw_sprite(struct Sprite* stacked_sprite, int x, int y, int rotation){
@@ -133,13 +139,14 @@ void graphics_load_default_font(){
 }
 
 void graphics_init(){
-    graphics_load_atlas("res/sprite.png");
+    graphics_load_atlas(&global_atlas, "res/sprite.png");
+    graphics_load_atlas(&global_icons, "res/icon.bmp");
     graphics_load_default_font();
     palette_load_default();
 }
 
 void graphics_close(){
-    UnloadImage(global_atlas.image);
-    UnloadTexture(global_atlas.texture);
+    graphics_unload_atlas(&global_atlas);
+    graphics_unload_atlas(&global_icons);
     UnloadFont(global_font);
 }
