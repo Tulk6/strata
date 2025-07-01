@@ -1,7 +1,3 @@
-struct Palette{
-    Color colours[32];
-};
-
 struct Palette global_palette;
 
 void palette_set_colour(int i, Color colour){

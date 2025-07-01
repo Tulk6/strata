@@ -8,15 +8,19 @@
 
 #include "raymath.h"
 #include "wren.c"
+
+#include "structs.h"
+
 //wren foreign objects 
 #include "sprite.c"
 
 //main functionality (static functions)
 #include "palette.c"
+#include "writer.c"
 #include "input.c"
 #include "graphics.c"
+#include "painter.c"
 #include "interface.c"
-#include "writer.c"
 #include "engine.c"
 
 RenderTexture render_target;

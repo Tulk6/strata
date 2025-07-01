@@ -1,15 +1,3 @@
-struct TextLine{
-    char* text;
-    int size;
-};
-
-struct TextBlock{
-    struct TextLine* lines;
-    int size;
-    int c_row;
-    int c_column
-};
-
 int writer_get_line_length(struct TextBlock* block, int i){
     if ((i<0) | (i>block->size)) return 0;
     return strlen(block->lines[i].text);

@@ -12,21 +12,20 @@ enum {
     ENGINE_MODE_RUN,
 };
 
-int global_engine_mode = ENGINE_MODE_CODE;
+int global_engine_mode = ENGINE_MODE_SPRITE;
 
 int f_size;
 int line_spacing;
 int left_margin;
+int top_margin;
 int bar_height;
+int sprite_scale;
 
 bool button;
 
 struct TextBlock text_edit;
+struct Painter painter;
 char* text_edit_str = NULL;
-
-Vector2 engine_get_mouse_pos(){
-    return (Vector2){(double)GetMouseX()/WINDOW_SCALE, (double)GetMouseY()/WINDOW_SCALE};
-}
 
 void engine_init(){
     button = false;
@@ -34,8 +33,12 @@ void engine_init(){
     line_spacing = 4;
     left_margin = 3;
     bar_height = 14;
+    top_margin = 3;
+    sprite_scale = 4;
 
     writer_ensure_text_edit_lines(&text_edit, 2);
+    painter_load(&painter, &global_atlas);
+    painter.rect = (Rectangle){32,0,32,16};
     //strcpy(text_edit.lines[0].text, "hello");
 }
 
@@ -52,26 +55,36 @@ void engine_run_game(){
 void engine_update_code(){
     char chr = GetCharPressed();
     if (chr != 0){
-        //engine_insert_at_cursor(chr);
+        writer_insert_at_cursor(&text_edit, chr);
     }
     if (IsKeyPressed(KEY_BACKSPACE)){
-        //engine_backspace_at_cursor();
+        writer_backspace_at_cursor(&text_edit);
     }
     if (IsKeyPressed(KEY_ENTER)){
-        //engine_newline_at_cursor();
+        writer_newline_at_cursor(&text_edit);
     }
     if (IsKeyPressed(KEY_TAB)){
-        //engine_insert_at_cursor('\t');
+        writer_insert_at_cursor(&text_edit, '\t');
     }
 
     if (IsKeyPressed(KEY_RIGHT)){
-        //engine_move_cursor(1, 0);
+        writer_move_cursor(&text_edit, 1, 0);
     }else if (IsKeyPressed(KEY_LEFT)){
-        //engine_move_cursor(-1, 0);
+        writer_move_cursor(&text_edit, -1, 0);
     }else if (IsKeyPressed(KEY_UP)){
-        //engine_set_cursor(global_cursor.column, global_cursor.row-1);
+        writer_set_cursor(&text_edit, text_edit.c_column, text_edit.c_row-1);
     }else if (IsKeyPressed(KEY_DOWN)){
-        //engine_set_cursor(global_cursor.column, global_cursor.row+1);
+        writer_set_cursor(&text_edit, text_edit.c_column, text_edit.c_row+1);
+    }
+}
+
+void engine_update_sprite(){
+    Vector2 pos = graphics_get_mouse_pos();
+    if (CheckCollisionPointRec(pos, (Rectangle){left_margin, top_margin, painter.rect.width*sprite_scale, painter.rect.height*sprite_scale})){
+        //printf("pos %f %f\n", pos.x, pos.y);
+        Vector2 pixel = Vector2Add(Vector2Scale(Vector2Subtract(pos, (Vector2){left_margin, top_margin}), 1.0/sprite_scale), 
+                        (Vector2){painter.rect.x, painter.rect.y});
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) painter_paint_pixel(&painter, pixel, RED);
     }
 }
 
@@ -84,40 +97,18 @@ void engine_update(){
         case ENGINE_MODE_CODE:
             engine_update_code();
             break;
+        case ENGINE_MODE_SPRITE:
+            engine_update_sprite();
     }
-}
-
-void draw_rectangle_bump(int x, int y, int w, int h, Color top, Color main, Color bottom, int bump){
-    DrawRectangleGradientV(x, y, w, bump, top, main);
-    DrawRectangle(x, y+bump, w, h-(2*bump), main);
-    DrawRectangleGradientV(x, y+h-bump, w, bump, main, bottom);
-}
-
-void draw_rectangle_raised(int x, int y, int w, int h, Color main, Color top, Color bottom, int bump){
-    DrawRectangle(x, y, w, h, top);
-    DrawRectangle(x+bump, y+bump, w-bump, h-bump, bottom);
-    DrawRectangle(x+bump, y+bump, w-bump*2, h-bump*2, main);
-}
-
-int draw_button(Rectangle rect, char* text, Color bg_col, Color fg_col, int bump, bool active){
-    if (active){
-        draw_rectangle_raised(rect.x, rect.y, rect.width, rect.height, bg_col, ColorBrightness(bg_col, -0.5), ColorBrightness(bg_col, 0.5), bump);
-    }else{
-        draw_rectangle_raised(rect.x, rect.y, rect.width, rect.height, bg_col, ColorBrightness(bg_col, 0.5), ColorBrightness(bg_col, -0.5), bump);
-    }
-
-    DrawTextEx(global_font, text, (Vector2){rect.x+bump+2, rect.y+1}, 8, 1, fg_col);
-
-    return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) & CheckCollisionPointRec(engine_get_mouse_pos(), rect);
 }
 
 void engine_draw_bar(){
     int bar_top = RENDER_HEIGHT-bar_height;
     ClearBackground(WHITE);
     //DrawRectangleGradientH(0, bar_top, RENDER_WIDTH, bar_height, (Color){1,54,120,255}, (Color){186,215,233,255});
-    draw_rectangle_raised(0, bar_top, RENDER_WIDTH, bar_height, (Color){178,177,175,255}, (Color){178,177,175,255}, (Color){178,177,175,255}, 1);
+    graphics_draw_rectangle_raised(0, bar_top, RENDER_WIDTH, bar_height, (Color){178,177,175,255}, (Color){178,177,175,255}, (Color){178,177,175,255}, 1);
     
-    if (draw_button((Rectangle){1, bar_top+1, 40, bar_height-2}, "code", (Color){127,156,219,255}, WHITE, 1, button)){
+    if (graphics_draw_button((Rectangle){1, bar_top+1, 40, bar_height-2}, "code", (Color){127,156,219,255}, WHITE, 1, button)){
         button = !button;
         //DrawRectangleGradientV(0, bar_top, RENDER_WIDTH, bar_height, (Color){58,130,229,255}, (Color){26,67,169,255});
     }
@@ -134,8 +125,10 @@ void engine_draw(){
     engine_draw_bar();
     switch (global_engine_mode){
         case ENGINE_MODE_CODE:
-            //engine_draw_code();
+            graphics_draw_writer(&text_edit, 2, 2);
             break;
+        case ENGINE_MODE_SPRITE:
+            graphics_draw_painter(&painter, left_margin, top_margin, sprite_scale);
     }
 
     //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment

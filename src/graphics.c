@@ -2,11 +2,6 @@
 // image -> 2d image
 // atlas -> image atlas all images and sprites are on
 
-struct Atlas {
-    Image image;
-    Texture texture;
-};
-
 struct Atlas global_atlas;
 struct Atlas global_icons;
 
@@ -19,6 +14,16 @@ Color global_draw_colour;
 void graphics_load_atlas(struct Atlas* atlas, char* path){
     atlas->image = LoadImage(path);
     atlas->texture = LoadTextureFromImage(atlas->image);
+}
+
+void graphics_reload_texture_rect(struct Atlas* atlas, Rectangle rect){
+    printf("%f %f %f %f\n", rect.x, rect.y, rect.width, rect.height);
+    Image crop_image = ImageCopy(atlas->image);
+    ImageCrop(&crop_image, rect);
+    void* pixels = LoadImageColors(crop_image);
+    UpdateTextureRec(atlas->texture, rect, pixels);
+    UnloadImageColors(pixels);
+    UnloadImage(crop_image);
 }
 
 void graphics_unload_atlas(struct Atlas* atlas){
@@ -71,6 +76,34 @@ void graphics_set_draw_colour(int index){
 void graphics_foreign_set_draw_colour(WrenVM* vm){
     int colour_index = wrenGetSlotDouble(vm, 1);
     graphics_set_draw_colour(colour_index);
+}
+
+void graphics_draw_writer(struct TextBlock* writer, int x, int y){
+    for (int i=0; i<writer->size;i++){
+        struct TextLine line = writer->lines[i];
+        DrawTextEx(global_font, line.text, (Vector2){x, y+i*(global_font.baseSize+4)}, global_font.baseSize, 1, BLACK);
+    }
+    //DrawRectangle()
+}
+
+void graphics_draw_painter(struct Painter* painter, int x, int y, int scale){
+    DrawTexturePro(painter->src->texture, painter->rect, (Rectangle){x, y, painter->rect.width*scale, 
+        painter->rect.height*scale}, (Vector2){0,0}, 0, WHITE);
+
+    if (scale>1){
+        for (int i=0; i<=painter->rect.width;i++){
+            DrawLine(x+i*scale, y, x+i*scale, y+painter->rect.height*scale, BLACK);
+        }
+        for (int i=0; i<=painter->rect.height;i++){
+            DrawLine(x, y+i*scale, x+painter->rect.width*scale, y+i*scale, BLACK);
+        }
+    }
+
+    for (int i=0;i<4;i++){
+        for (int j=0;j<8;j++){
+            DrawRectangle(j*10+(RENDER_WIDTH-90), i*10+10, 8, 8, palette_get_colour(i*8+j));
+        }
+    }
 }
 
 int get_next_char(Image* img, int x){
@@ -149,4 +182,32 @@ void graphics_close(){
     graphics_unload_atlas(&global_atlas);
     graphics_unload_atlas(&global_icons);
     UnloadFont(global_font);
+}
+
+Vector2 graphics_get_mouse_pos(){
+    return (Vector2){(double)GetMouseX()/WINDOW_SCALE, (double)GetMouseY()/WINDOW_SCALE};
+}
+
+void graphics_draw_rectangle_bump(int x, int y, int w, int h, Color top, Color main, Color bottom, int bump){
+    DrawRectangleGradientV(x, y, w, bump, top, main);
+    DrawRectangle(x, y+bump, w, h-(2*bump), main);
+    DrawRectangleGradientV(x, y+h-bump, w, bump, main, bottom);
+}
+
+void graphics_draw_rectangle_raised(int x, int y, int w, int h, Color main, Color top, Color bottom, int bump){
+    DrawRectangle(x, y, w, h, top);
+    DrawRectangle(x+bump, y+bump, w-bump, h-bump, bottom);
+    DrawRectangle(x+bump, y+bump, w-bump*2, h-bump*2, main);
+}
+
+int graphics_draw_button(Rectangle rect, char* text, Color bg_col, Color fg_col, int bump, bool active){
+    if (active){
+        graphics_draw_rectangle_raised(rect.x, rect.y, rect.width, rect.height, bg_col, ColorBrightness(bg_col, -0.5), ColorBrightness(bg_col, 0.5), bump);
+    }else{
+        graphics_draw_rectangle_raised(rect.x, rect.y, rect.width, rect.height, bg_col, ColorBrightness(bg_col, 0.5), ColorBrightness(bg_col, -0.5), bump);
+    }
+
+    DrawTextEx(global_font, text, (Vector2){rect.x+bump+2, rect.y+1}, 8, 1, fg_col);
+
+    return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) & CheckCollisionPointRec(graphics_get_mouse_pos(), rect);
 }
