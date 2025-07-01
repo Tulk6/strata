@@ -16,12 +16,9 @@
 
 //main functionality (static functions)
 #include "palette.c"
-#include "writer.c"
 #include "input.c"
 #include "graphics.c"
-#include "painter.c"
 #include "interface.c"
-#include "engine.c"
 
 RenderTexture render_target;
 
@@ -36,7 +33,7 @@ void main_init(){
     window_init();
     graphics_init();
     interface_init();
-    engine_init();
+    //engine_init();
 }
 
 void window_close(){
@@ -49,7 +46,7 @@ void main_close(){
     printf("gdone");
     interface_close();
     printf("idone");
-    engine_close();
+    //engine_close();
     printf("edone");
     window_close();
     printf("wdone");
@@ -65,7 +62,7 @@ int main(){
     while (!WindowShouldClose()){
         BeginTextureMode(render_target);
 
-        if (IsKeyPressed(KEY_F3)){
+        /*if (IsKeyPressed(KEY_F3)){
             engine_import("res/game.wren");
             //engine_export();1bB2345567
         }
@@ -86,7 +83,9 @@ int main(){
         }else{
             engine_update();
             engine_draw();
-        }
+        }*/
+        interface_update();
+        interface_draw();
 
         EndTextureMode();
 

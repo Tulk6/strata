@@ -1,3 +1,11 @@
+class Engine {
+    static width {320}
+    static height {240}
+    static font_w {5}
+    static font_h {8}
+    static font_a {3}
+}
+
 class Input {
     foreign static key_down(key_code)
 

@@ -78,34 +78,16 @@ void graphics_foreign_set_draw_colour(WrenVM* vm){
     graphics_set_draw_colour(colour_index);
 }
 
-void graphics_draw_writer(struct TextBlock* writer, int x, int y){
-    for (int i=0; i<writer->size;i++){
-        struct TextLine line = writer->lines[i];
-        DrawTextEx(global_font, line.text, (Vector2){x, y+i*(global_font.baseSize+4)}, global_font.baseSize, 1, BLACK);
-    }
-    //DrawRectangle()
+void graphics_draw_rectangle(int x, int y, int w, int h){
+    DrawRectangle(x, y, w, h, global_draw_colour);
 }
 
-void graphics_draw_painter(struct Painter* painter, int x, int y, int scale){
-    DrawTexturePro(painter->src->texture, painter->rect, (Rectangle){x, y, painter->rect.width*scale, 
-        painter->rect.height*scale}, (Vector2){0,0}, 0, WHITE);
-
-    if (scale>1){
-        for (int i=0; i<=painter->rect.width;i++){
-            DrawLine(x+i*scale, y, x+i*scale, y+painter->rect.height*scale, BLACK);
-        }
-        for (int i=0; i<=painter->rect.height;i++){
-            DrawLine(x, y+i*scale, x+painter->rect.width*scale, y+i*scale, BLACK);
-        }
-    }
-
-    for (int i=0;i<4;i++){
-        for (int j=0;j<8;j++){
-            DrawRectangle(j*10+(RENDER_WIDTH-90), i*10+10, 8, 8, palette_get_colour(i*8+j));
-        }
-    }
-
-    DrawRectangle((RENDER_WIDTH-90), 60, 20, 20, global_draw_colour);
+void graphics_foreign_draw_rectangle(WrenVM* vm){
+    int x = wrenGetSlotDouble(vm, 1);
+    int y = wrenGetSlotDouble(vm, 2);
+    int w = wrenGetSlotDouble(vm, 3);
+    int h = wrenGetSlotDouble(vm, 4);
+    graphics_draw_rectangle(x, y, w, h);
 }
 
 int get_next_char(Image* img, int x){
@@ -186,7 +168,7 @@ void graphics_close(){
     UnloadFont(global_font);
 }
 
-Vector2 graphics_get_mouse_pos(){
+/*Vector2 graphics_get_mouse_pos(){
     return (Vector2){(double)GetMouseX()/WINDOW_SCALE, (double)GetMouseY()/WINDOW_SCALE};
 }
 
@@ -212,4 +194,4 @@ int graphics_draw_button(Rectangle rect, char* text, Color bg_col, Color fg_col,
     DrawTextEx(global_font, text, (Vector2){rect.x+bump+2, rect.y+1}, 8, 1, fg_col);
 
     return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) & CheckCollisionPointRec(graphics_get_mouse_pos(), rect);
-}
+}*/
