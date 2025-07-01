@@ -57,6 +57,10 @@ void main_close(){
 
 int main(){
     main_init();
+
+    char* game = LoadFileText("res/game.wren");
+    interface_load_game(game);
+    UnloadFileText(game);
     
     while (!WindowShouldClose()){
         BeginTextureMode(render_target);

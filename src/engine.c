@@ -12,7 +12,7 @@ enum {
     ENGINE_MODE_RUN,
 };
 
-int global_engine_mode = ENGINE_MODE_SPRITE;
+int global_engine_mode = ENGINE_MODE_RUN;
 
 int f_size;
 int line_spacing;
@@ -34,7 +34,7 @@ void engine_init(){
     left_margin = 3;
     bar_height = 14;
     top_margin = 3;
-    sprite_scale = 4;
+    sprite_scale = 6;
 
     writer_ensure_text_edit_lines(&text_edit, 2);
     painter_load(&painter, &global_atlas);
@@ -76,6 +76,8 @@ void engine_update_code(){
     }else if (IsKeyPressed(KEY_DOWN)){
         writer_set_cursor(&text_edit, text_edit.c_column, text_edit.c_row+1);
     }
+
+
 }
 
 void engine_update_sprite(){

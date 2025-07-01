@@ -50,7 +50,7 @@ void graphics_foreign_draw_sprite(WrenVM* vm){
 }
 
 void graphics_draw_text(char* text, int x, int y){
-    DrawTextEx(global_font, text, (Vector2){x, y}, 9, 1, global_draw_colour);
+    DrawTextEx(global_font, text, (Vector2){x, y}, global_font.baseSize, 1, global_draw_colour);
 }
 
 void graphics_foreign_draw_text(WrenVM* vm){
@@ -104,6 +104,8 @@ void graphics_draw_painter(struct Painter* painter, int x, int y, int scale){
             DrawRectangle(j*10+(RENDER_WIDTH-90), i*10+10, 8, 8, palette_get_colour(i*8+j));
         }
     }
+
+    DrawRectangle((RENDER_WIDTH-90), 60, 20, 20, global_draw_colour);
 }
 
 int get_next_char(Image* img, int x){

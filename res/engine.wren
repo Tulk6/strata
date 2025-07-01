@@ -37,6 +37,8 @@ class Key {
 class Graphics {
     foreign static draw_sprite(sprite, x, y, rotation) 
 
+    foreign static draw_rectangle(x, y, w, h)
+
     foreign static clear_screen()
 
     foreign static draw_text(text, x, y)
