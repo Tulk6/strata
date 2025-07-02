@@ -19,6 +19,8 @@ WrenForeignMethodFn foreign_methods(const char* signature){
     //if (!strcmp(signature, "static Engine.load_game(_)")) return interface_foreign_load_game;
 
     if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return graphics_foreign_draw_sprite;
+    if (!strcmp(signature, "static Graphics.draw_image(_,_,_,_)")) return graphics_foreign_draw_image;
+    if (!strcmp(signature, "static Graphics.draw(_,_)")) return graphics_foreign_draw;
     if (!strcmp(signature, "static Graphics.clear_screen()")) return graphics_foreign_clear_screen;
     if (!strcmp(signature, "static Graphics.draw_text(_,_,_)")) return graphics_foreign_draw_text;
     if (!strcmp(signature, "static Graphics.set_draw_colour(_)")) return graphics_foreign_set_draw_colour;
@@ -27,6 +29,8 @@ WrenForeignMethodFn foreign_methods(const char* signature){
     if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
     if (!strcmp(signature, "static Input.key_pressed(_)")) return input_foreign_key_pressed;
     if (!strcmp(signature, "static Input.get_char()")) return input_foreign_get_char;
+    if (!strcmp(signature, "static Input.get_mouse_x()")) return input_foreign_get_mouse_x;
+    if (!strcmp(signature, "static Input.get_mouse_y()")) return input_foreign_get_mouse_y;
     return NULL;
 }
 
@@ -51,9 +55,10 @@ WrenForeignClassMethods bind_foreign_class(WrenVM* vm, const char* module, const
     if (!strcmp(class_name, "Sprite")){
         class_methods.allocate = sprite_foreign_allocate;
         class_methods.finalize = NULL;
-    }/*else if (!strcmp(class_name, "Palette")){
-        class_methods.allocate = palette_foreign_allocate;
-        class_methods.finalize = palette_foreign_finalize;
+    }/*else if (!strcmp(class_name, "Image")){
+        class_methods.allocate = image_foreign_allocate;
+        class_methods.finalize = NULL;
+        //class_methods.finalize = palette_foreign_finalize;
     }*/
     return class_methods;
 }

@@ -37,3 +37,23 @@ void input_foreign_get_char(WrenVM* vm){
         
     }*/
 }
+
+Vector2 input_get_mouse(){
+    return Vector2Scale(GetMousePosition(), 1.0/WINDOW_SCALE);
+}
+
+int input_get_mouse_x(){
+    return input_get_mouse().x;
+}
+
+void input_foreign_get_mouse_x(WrenVM* vm){
+    wrenSetSlotDouble(vm, 0, input_get_mouse_x());
+}
+
+int input_get_mouse_y(){
+    return input_get_mouse().y;
+}
+
+void input_foreign_get_mouse_y(WrenVM* vm){
+    wrenSetSlotDouble(vm, 0, input_get_mouse_y());
+}

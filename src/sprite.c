@@ -1,10 +1,3 @@
-struct Sprite {
-    Rectangle src;
-    int slice_width;
-    int slice_height;
-    int num_slices;
-};
-
 void sprite_load(struct Sprite* sprite, int src_x, int src_y, int slice_width, int slice_height, int num_slices){
     sprite->src = (Rectangle){src_x, src_y, slice_width*num_slices, slice_height};
     sprite->slice_width = slice_width;

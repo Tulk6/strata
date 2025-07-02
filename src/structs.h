@@ -7,19 +7,13 @@ struct Palette{
     Color colours[32];
 };
 
-struct TextLine{
-    char* text;
-    int size;
+struct Sprite {
+    Rectangle src;
+    int slice_width;
+    int slice_height;
+    int num_slices;
 };
 
-struct TextBlock{
-    struct TextLine* lines;
-    int size;
-    int c_row;
-    int c_column;
-};
-
-struct Painter{
-    struct Atlas* src;
-    Rectangle rect;
+struct SpriteImage {
+    Rectangle src;
 };

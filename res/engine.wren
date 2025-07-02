@@ -24,6 +24,12 @@ class Input {
     }
 
     foreign static get_char()
+
+    foreign static get_mouse_x()
+    foreign static get_mouse_y()
+    static get_mouse() {
+        return [get_mouse_x(), get_mouse_y()]
+    }
 }
 
 class Key {
@@ -44,6 +50,8 @@ class Key {
 
 class Graphics {
     foreign static draw_sprite(sprite, x, y, rotation) 
+    foreign static draw_image(sprite, x, y, rotation)
+    foreign static draw(x, y)
 
     foreign static draw_rectangle(x, y, w, h)
 

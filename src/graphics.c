@@ -31,6 +31,16 @@ void graphics_unload_atlas(struct Atlas* atlas){
     UnloadImage(atlas->image);
 }
 
+void graphics_draw(int x, int y){
+    DrawPixel(x, y, global_draw_colour);
+}
+
+void graphics_foreign_draw(WrenVM* vm){
+    int x = wrenGetSlotDouble(vm, 1);
+    int y = wrenGetSlotDouble(vm, 2);
+    graphics_draw(x, y);
+}
+
 void graphics_draw_sprite(struct Sprite* stacked_sprite, int x, int y, int rotation){
     for (int i=0;i<stacked_sprite->num_slices;i++){
         DrawTexturePro(global_atlas.texture, (Rectangle){stacked_sprite->slice_width*i, 0,
@@ -47,6 +57,19 @@ void graphics_foreign_draw_sprite(WrenVM* vm){
     int y = wrenGetSlotDouble(vm, 3);
     int rotation = wrenGetSlotDouble(vm, 4);
     graphics_draw_sprite(sprite, x, y, rotation);
+}
+
+void graphics_draw_image(struct Sprite* sprite, int x, int y, int rotation){
+    DrawTexturePro(global_atlas.texture, sprite->src, (Rectangle){x, y, sprite->src.width, sprite->src.height}, (Vector2){0,0},
+                    0, WHITE);
+}
+
+void graphics_foreign_draw_image(WrenVM* vm){
+    struct Sprite* sprite = (struct Sprite*)wrenGetSlotForeign(vm, 1);
+    int x = wrenGetSlotDouble(vm, 2);
+    int y = wrenGetSlotDouble(vm, 3);
+    int rotation = wrenGetSlotDouble(vm, 4);
+    graphics_draw_image(sprite, x, y, rotation);
 }
 
 void graphics_draw_text(char* text, int x, int y){

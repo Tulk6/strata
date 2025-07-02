@@ -71,15 +71,18 @@ class TextEditor {
 
 class SpriteEditor {
     construct new() {
-
+        _img = Sprite.new(0, 0, 256, 256, 1)
     }
 
     update() {
-
+        var x = Input.get_mouse_x()
+        var y = Input.get_mouse_y()
+        Graphics.set_draw_colour(5)
+        Graphics.draw(Input.get_mouse_x(), Input.get_mouse_y())
     }
 
     draw() {
-
+        Graphics.draw_image(_img, 0, 0, 0)
     }
 }
 
@@ -92,7 +95,7 @@ class Game {
         _text_editor = TextEditor.new()
         _sprite_editor = SpriteEditor.new()
 
-        _mode = this.mode_code
+        _mode = this.mode_paint
     }
 
     update(delta) {
@@ -121,7 +124,7 @@ class Game {
         }else if (_mode == this.mode_paint){
             _sprite_editor.draw()
         }
-        
+
         draw_statusbar()
     }
 }
