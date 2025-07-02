@@ -42,7 +42,7 @@ class TextEditor {
             if (_c_column != 0){
                 _code[_c_row] = _code[_c_row][0..._c_column-1]+_code[_c_row][_c_column..-1]
                  _c_column = _c_column - 1
-            }else if (_c_column==0){
+            }else if (_c_column==0 && _c_row != 0){
                 _c_column = _code[_c_row-1].count
                 _code[_c_row-1] = _code[_c_row-1]+_code[_c_row]
                 _code.removeAt(_c_row)
@@ -71,18 +71,94 @@ class TextEditor {
 
 class SpriteEditor {
     construct new() {
-        _img = Sprite.new(0, 0, 256, 256, 1)
+        _left_margin = 10
+        _top_margin = 10
+        _scale = 5
+        _crop = 32
+        _crop_x = 0
+        _crop_y = 0
+        _draw_grid = true
+        _atlas_x = 0
+        _atlas_y = 0
+        _pri_colour = 0
+        _sec_colour = 1
+    }
+
+    get_mouse_pixel_x(){
+        return (Input.get_mouse_x()- _left_margin)/_scale
+    }
+    get_mouse_pixel_y(){
+        return (Input.get_mouse_y()- _top_margin)/_scale
     }
 
     update() {
-        var x = Input.get_mouse_x()
-        var y = Input.get_mouse_y()
         Graphics.set_draw_colour(5)
-        Graphics.draw(Input.get_mouse_x(), Input.get_mouse_y())
+        
+        if (get_mouse_pixel_x()<_crop && get_mouse_pixel_y()<_crop){
+            if (Input.button_down(Mouse.left)){
+                Graphics.set_draw_colour(_pri_colour)
+                Graphics.blit(this.get_mouse_pixel_x(), this.get_mouse_pixel_y())
+            }else if (Input.button_down(Mouse.right)){
+                Graphics.set_draw_colour(_sec_colour)
+                Graphics.blit(this.get_mouse_pixel_x(), this.get_mouse_pixel_y())
+            }            
+        }
+
+
+    }
+
+    draw_palette(x, y){
+        var swatch_size = 10
+        var swatch_bound = swatch_size+2
+        var pen_size = 20
+        for (i in 0...4){
+            for (j in 0...8){
+                Graphics.set_draw_colour(i*swatch_size+j)
+                Graphics.draw_rectangle(x+j*swatch_bound, y+i*swatch_bound, swatch_size, swatch_size)
+            }
+        }
+        Graphics.set_draw_colour(_pri_colour)
+        Graphics.draw_rectangle(x+9*swatch_bound, y, pen_size, pen_size)
+        Graphics.set_draw_colour(_sec_colour)
+        Graphics.draw_rectangle(x+9*swatch_bound, y+pen_size+2, pen_size, pen_size)
+
+        var m_pal_column = ((Input.get_mouse_x()-x)/swatch_bound).floor
+        var m_pal_row = ((Input.get_mouse_y()-y)/swatch_bound).floor
+        if ((0...8).contains(m_pal_column) && (0...4).contains(m_pal_row)){
+            var m_pal = m_pal_row*8+m_pal_column
+            if (Input.button_pressed(Mouse.left)) {_pri_colour = m_pal}
+            if (Input.button_pressed(Mouse.right)) {_sec_colour = m_pal}
+        }
+    }
+
+    draw_editor(x, y){
+        Graphics.draw_patch(_crop_x, _crop_y, _crop, _crop, x, y, _crop*_scale, _crop*_scale)
+
+        Graphics.set_draw_colour(_pri_colour)
+        if (get_mouse_pixel_x()<_crop && get_mouse_pixel_y()<_crop){
+            Graphics.draw_rectangle(get_mouse_pixel_x().floor*_scale+x, get_mouse_pixel_y().floor*_scale+y, _scale, _scale)
+        }
+
+        Graphics.set_draw_colour(0)
+        if (_draw_grid){
+            for (i in 0.._crop){
+                Graphics.draw_line(x, y+i*_scale, x+_crop*_scale, y+i*_scale)
+            }
+            for (i in 0.._crop){
+                Graphics.draw_line(x+i*_scale, y, x+i*_scale, y+_crop*_scale)
+            }
+        }
+    }
+
+    draw_atlas(x, y){
+        Graphics.draw_patch(128*_atlas_x, 128*_atlas_x, 128, 128, _left_margin+_crop*_scale+10, _top_margin, 128, 128)
+        
     }
 
     draw() {
-        Graphics.draw_image(_img, 0, 0, 0)
+        draw_palette(_left_margin, _top_margin+_crop*_scale+5)
+        draw_editor(_left_margin, _top_margin)
+        draw_atlas(_crop*_scale+10, _top_margin)
     }
 }
 
@@ -126,5 +202,9 @@ class Game {
         }
 
         draw_statusbar()
+    }
+
+    get_code(){
+
     }
 }

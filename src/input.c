@@ -57,3 +57,23 @@ int input_get_mouse_y(){
 void input_foreign_get_mouse_y(WrenVM* vm){
     wrenSetSlotDouble(vm, 0, input_get_mouse_y());
 }
+
+bool input_button_pressed(int button_code){
+    return IsMouseButtonPressed(button_code);
+}
+
+void input_foreign_button_pressed(WrenVM* vm){
+    int button_code = (int)wrenGetSlotDouble(vm, 1);
+    bool button_state = input_button_pressed(button_code);
+    wrenSetSlotBool(vm, 0, button_state);
+}
+
+bool input_button_down(int button_code){
+    return IsMouseButtonDown(button_code);
+}
+
+void input_foreign_button_down(WrenVM* vm){
+    int button_code = (int)wrenGetSlotDouble(vm, 1);
+    bool button_state = input_button_down(button_code);
+    wrenSetSlotBool(vm, 0, button_state);
+}

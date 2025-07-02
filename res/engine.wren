@@ -30,6 +30,8 @@ class Input {
     static get_mouse() {
         return [get_mouse_x(), get_mouse_y()]
     }
+    foreign static button_pressed(button_code)
+    foreign static button_down(button_code)
 }
 
 class Key {
@@ -48,22 +50,45 @@ class Key {
     static e {69}
 }
 
+class Mouse {
+    static none {-1}
+    static left {0}
+    static right {1}
+}
+
 class Graphics {
     foreign static draw_sprite(sprite, x, y, rotation) 
     foreign static draw_image(sprite, x, y, rotation)
+    foreign static draw_image_scaled(sprite, x, y, sx, sy, rotation)
+    foreign static draw_patch(px, py, pw, ph, x, y, w, h)
     foreign static draw(x, y)
 
     foreign static draw_rectangle(x, y, w, h)
+    foreign static draw_rectangle_lines(x, y, w, h)
+
+    foreign static draw_line(x, y, ex, ey)
 
     foreign static clear_screen()
 
     foreign static draw_text(text, x, y)
 
     foreign static set_draw_colour(col)
+
+    foreign static blit(x, y)
 }
 
 foreign class Sprite {
     construct new(src_x, src_y, tile_width, tile_height, n_tiles) {}
+}
+
+class UI {
+    button(x,y,w,h){
+        var left = Input.button_pressed(Mouse.left)
+        var right = Input.button_pressed(Mouse.right)
+        if (left) { return Mouse.left }
+        if (right) { return Mouse.right }
+        return Mouse.none
+    }
 }
 
 class Maths {

@@ -20,17 +20,24 @@ WrenForeignMethodFn foreign_methods(const char* signature){
 
     if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return graphics_foreign_draw_sprite;
     if (!strcmp(signature, "static Graphics.draw_image(_,_,_,_)")) return graphics_foreign_draw_image;
+    if (!strcmp(signature, "static Graphics.draw_image_scaled(_,_,_,_,_,_)")) return graphics_foreign_draw_image_scaled;
+    if (!strcmp(signature, "static Graphics.draw_patch(_,_,_,_,_,_,_,_)")) return graphics_foreign_draw_patch;
     if (!strcmp(signature, "static Graphics.draw(_,_)")) return graphics_foreign_draw;
     if (!strcmp(signature, "static Graphics.clear_screen()")) return graphics_foreign_clear_screen;
     if (!strcmp(signature, "static Graphics.draw_text(_,_,_)")) return graphics_foreign_draw_text;
     if (!strcmp(signature, "static Graphics.set_draw_colour(_)")) return graphics_foreign_set_draw_colour;
     if (!strcmp(signature, "static Graphics.draw_rectangle(_,_,_,_)")) return graphics_foreign_draw_rectangle;
+    if (!strcmp(signature, "static Graphics.draw_rectangle_lines(_,_,_,_)")) return graphics_foreign_draw_rectangle_lines;
+    if (!strcmp(signature, "static Graphics.blit(_,_)")) return graphics_foreign_blit;
+    if (!strcmp(signature, "static Graphics.draw_line(_,_,_,_)")) return graphics_foreign_draw_line;
 
     if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
     if (!strcmp(signature, "static Input.key_pressed(_)")) return input_foreign_key_pressed;
     if (!strcmp(signature, "static Input.get_char()")) return input_foreign_get_char;
     if (!strcmp(signature, "static Input.get_mouse_x()")) return input_foreign_get_mouse_x;
     if (!strcmp(signature, "static Input.get_mouse_y()")) return input_foreign_get_mouse_y;
+    if (!strcmp(signature, "static Input.button_pressed(_)")) return input_foreign_button_pressed;
+    if (!strcmp(signature, "static Input.button_down(_)")) return input_foreign_button_down;
     return NULL;
 }
 

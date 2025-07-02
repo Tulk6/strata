@@ -11,13 +11,13 @@ int global_font_height = 9;
 
 Color global_draw_colour;
 
-void graphics_load_atlas(struct Atlas* atlas, char* path){
-    atlas->image = LoadImage(path);
+void graphics_load_atlas(struct Atlas* atlas){
+    atlas->image = GenImageColor(ATLAS_WIDTH, ATLAS_HEIGHT, palette_get_colour(0));//LoadImage(path);
     atlas->texture = LoadTextureFromImage(atlas->image);
 }
 
 void graphics_reload_texture_rect(struct Atlas* atlas, Rectangle rect){
-    printf("%f %f %f %f\n", rect.x, rect.y, rect.width, rect.height);
+    //printf("%f %f %f %f\n", rect.x, rect.y, rect.width, rect.height);
     Image crop_image = ImageCopy(atlas->image);
     ImageCrop(&crop_image, rect);
     void* pixels = LoadImageColors(crop_image);
@@ -41,7 +41,7 @@ void graphics_foreign_draw(WrenVM* vm){
     graphics_draw(x, y);
 }
 
-void graphics_draw_sprite(struct Sprite* stacked_sprite, int x, int y, int rotation){
+void graphics_draw_sprite(struct Sprite* stacked_sprite, int x, int y, float rotation){
     for (int i=0;i<stacked_sprite->num_slices;i++){
         DrawTexturePro(global_atlas.texture, (Rectangle){stacked_sprite->slice_width*i, 0,
                                                             stacked_sprite->slice_width, stacked_sprite->slice_height},
@@ -55,11 +55,11 @@ void graphics_foreign_draw_sprite(WrenVM* vm){
     struct Sprite* sprite = (struct Sprite*)wrenGetSlotForeign(vm, 1);
     int x = wrenGetSlotDouble(vm, 2);
     int y = wrenGetSlotDouble(vm, 3);
-    int rotation = wrenGetSlotDouble(vm, 4);
+    float rotation = wrenGetSlotDouble(vm, 4);
     graphics_draw_sprite(sprite, x, y, rotation);
 }
 
-void graphics_draw_image(struct Sprite* sprite, int x, int y, int rotation){
+void graphics_draw_image(struct Sprite* sprite, int x, int y, float rotation){
     DrawTexturePro(global_atlas.texture, sprite->src, (Rectangle){x, y, sprite->src.width, sprite->src.height}, (Vector2){0,0},
                     0, WHITE);
 }
@@ -68,8 +68,63 @@ void graphics_foreign_draw_image(WrenVM* vm){
     struct Sprite* sprite = (struct Sprite*)wrenGetSlotForeign(vm, 1);
     int x = wrenGetSlotDouble(vm, 2);
     int y = wrenGetSlotDouble(vm, 3);
-    int rotation = wrenGetSlotDouble(vm, 4);
+    float rotation = wrenGetSlotDouble(vm, 4);
     graphics_draw_image(sprite, x, y, rotation);
+}
+
+void graphics_draw_image_scaled(struct Sprite* sprite, int x, int y, float sx, float sy, float rotation){
+    DrawTexturePro(global_atlas.texture, sprite->src, (Rectangle){x, y, sprite->src.width*sx, sprite->src.height*sy}, (Vector2){0,0},
+                    0, WHITE);
+}
+
+void graphics_foreign_draw_image_scaled(WrenVM* vm){
+    struct Sprite* sprite = (struct Sprite*)wrenGetSlotForeign(vm, 1);
+    int x = wrenGetSlotDouble(vm, 2);
+    int y = wrenGetSlotDouble(vm, 3);
+    float sx = wrenGetSlotDouble(vm, 4);
+    float sy = wrenGetSlotDouble(vm, 5);
+    float rotation = wrenGetSlotDouble(vm, 6);
+    graphics_draw_image_scaled(sprite, x, y, sx, sy, rotation);
+}
+
+void graphics_draw_patch(int px, int py, int pw, int ph, int x, int y, int w, int h){
+    DrawTexturePro(global_atlas.texture, (Rectangle){px, py, pw, ph}, (Rectangle){x, y, w, h}, (Vector2){0,0},
+                    0, WHITE);
+}
+
+void graphics_foreign_draw_patch(WrenVM* vm){
+    int px = wrenGetSlotDouble(vm, 1);
+    int py = wrenGetSlotDouble(vm, 2);
+    int pw = wrenGetSlotDouble(vm, 3);
+    int ph = wrenGetSlotDouble(vm, 4);
+    int x = wrenGetSlotDouble(vm, 5);
+    int y = wrenGetSlotDouble(vm, 6);
+    int w = wrenGetSlotDouble(vm, 7);
+    int h = wrenGetSlotDouble(vm, 8);
+    graphics_draw_patch(px, py, pw, ph, x, y, w, h);
+}
+
+void graphics_draw_line(int x, int y, int ex, int ey){
+    DrawLine(x, y, ex, ey, global_draw_colour);
+}
+
+void graphics_foreign_draw_line(WrenVM* vm){
+    int x = wrenGetSlotDouble(vm, 1);
+    int y = wrenGetSlotDouble(vm, 2);
+    int ex = wrenGetSlotDouble(vm, 3);
+    int ey = wrenGetSlotDouble(vm, 4);
+    graphics_draw_line(x, y, ex, ey);
+}
+
+void graphics_blit(int x, int y){
+    ImageDrawPixel(&global_atlas.image, x, y, global_draw_colour);
+    graphics_reload_texture_rect(&global_atlas, (Rectangle){x, y, 1, 1});
+}
+
+void graphics_foreign_blit(WrenVM* vm){
+    int x = wrenGetSlotDouble(vm, 1);
+    int y = wrenGetSlotDouble(vm, 2);
+    graphics_blit(x, y);
 }
 
 void graphics_draw_text(char* text, int x, int y){
@@ -111,6 +166,18 @@ void graphics_foreign_draw_rectangle(WrenVM* vm){
     int w = wrenGetSlotDouble(vm, 3);
     int h = wrenGetSlotDouble(vm, 4);
     graphics_draw_rectangle(x, y, w, h);
+}
+
+void graphics_draw_rectangle_lines(int x, int y, int w, int h){
+    DrawRectangleLines(x, y, w, h, global_draw_colour);
+}
+
+void graphics_foreign_draw_rectangle_lines(WrenVM* vm){
+    int x = wrenGetSlotDouble(vm, 1);
+    int y = wrenGetSlotDouble(vm, 2);
+    int w = wrenGetSlotDouble(vm, 3);
+    int h = wrenGetSlotDouble(vm, 4);
+    graphics_draw_rectangle_lines(x, y, w, h);
 }
 
 int get_next_char(Image* img, int x){
@@ -179,10 +246,10 @@ void graphics_load_default_font(){
 }
 
 void graphics_init(){
-    graphics_load_atlas(&global_atlas, "res/sprite.png");
-    graphics_load_atlas(&global_icons, "res/icon.bmp");
-    graphics_load_default_font();
     palette_load_default();
+    graphics_load_atlas(&global_atlas); //,"res/sprite.png");
+    graphics_load_atlas(&global_icons);
+    graphics_load_default_font();
 }
 
 void graphics_close(){

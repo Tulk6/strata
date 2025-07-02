@@ -1,6 +1,8 @@
 #define RENDER_WIDTH 320
 #define RENDER_HEIGHT 240
 #define WINDOW_SCALE 2
+#define ATLAS_WIDTH 256
+#define ATLAS_HEIGHT 256
 
 #include "raylib.h"
 #define RAYGUI_IMPLEMENTATION
@@ -93,6 +95,7 @@ int main(){
         DrawTexturePro(render_target.texture, (Rectangle){0,RENDER_HEIGHT,RENDER_WIDTH,-RENDER_HEIGHT}, 
                                         (Rectangle){0, 0, RENDER_WIDTH*WINDOW_SCALE,RENDER_HEIGHT*WINDOW_SCALE},
                                         (Vector2){0,0}, 0, WHITE);
+        //DrawFPS(0,0);
         EndDrawing();
     }
     main_close();
