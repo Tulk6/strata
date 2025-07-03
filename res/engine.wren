@@ -75,18 +75,36 @@ class Graphics {
     foreign static set_draw_colour(col)
 
     foreign static blit(x, y)
+
+    //foreign static draw_icon(x, y, i)
 }
 
 foreign class Sprite {
     construct new(src_x, src_y, tile_width, tile_height, n_tiles) {}
 }
 
+class Shape {
+    static point_in_rec(x, y, rx, ry, w, h){
+        if (x > rx && x < rx+w && y > ry && y < ry+h){
+            return true
+        }
+        return false
+    }
+}
+
 class UI {
-    button(x,y,w,h){
+    static button(x,y,w,h){
+        if (!Shape.point_in_rec(Input.get_mouse_x(), Input.get_mouse_y(), x, y, w, h)) {
+            return false
+        }
         var left = Input.button_pressed(Mouse.left)
         var right = Input.button_pressed(Mouse.right)
-        if (left) { return Mouse.left }
-        if (right) { return Mouse.right }
+        if (left == true) { 
+            return Mouse.left 
+        }
+        if (right == true) { 
+            return Mouse.right 
+        }
         return Mouse.none
     }
 }

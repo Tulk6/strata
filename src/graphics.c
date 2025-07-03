@@ -3,7 +3,6 @@
 // atlas -> image atlas all images and sprites are on
 
 struct Atlas global_atlas;
-struct Atlas global_icons;
 
 Font global_font;
 int global_font_width = 5;
@@ -11,8 +10,8 @@ int global_font_height = 9;
 
 Color global_draw_colour;
 
-void graphics_load_atlas(struct Atlas* atlas){
-    atlas->image = GenImageColor(ATLAS_WIDTH, ATLAS_HEIGHT, palette_get_colour(0));//LoadImage(path);
+void graphics_load_atlas(struct Atlas* atlas, int width, int height){
+    atlas->image = GenImageColor(width, height, palette_get_colour(0));//LoadImage(path);
     atlas->texture = LoadTextureFromImage(atlas->image);
 }
 
@@ -87,8 +86,13 @@ void graphics_foreign_draw_image_scaled(WrenVM* vm){
     graphics_draw_image_scaled(sprite, x, y, sx, sy, rotation);
 }
 
-void graphics_draw_patch(int px, int py, int pw, int ph, int x, int y, int w, int h){
-    DrawTexturePro(global_atlas.texture, (Rectangle){px, py, pw, ph}, (Rectangle){x, y, w, h}, (Vector2){0,0},
+void graphics_draw_patch_tint(struct Atlas* atlas, int px, int py, int pw, int ph, int x, int y, int w, int h){
+    DrawTexturePro(atlas->texture, (Rectangle){px, py, pw, ph}, (Rectangle){x, y, w, h}, (Vector2){0,0},
+                    0, global_draw_colour);
+}
+
+void graphics_draw_patch(struct Atlas* atlas, int px, int py, int pw, int ph, int x, int y, int w, int h){
+    DrawTexturePro(atlas->texture, (Rectangle){px, py, pw, ph}, (Rectangle){x, y, w, h}, (Vector2){0,0},
                     0, WHITE);
 }
 
@@ -101,7 +105,7 @@ void graphics_foreign_draw_patch(WrenVM* vm){
     int y = wrenGetSlotDouble(vm, 6);
     int w = wrenGetSlotDouble(vm, 7);
     int h = wrenGetSlotDouble(vm, 8);
-    graphics_draw_patch(px, py, pw, ph, x, y, w, h);
+    graphics_draw_patch(&global_atlas, px, py, pw, ph, x, y, w, h);
 }
 
 void graphics_draw_line(int x, int y, int ex, int ey){
@@ -127,6 +131,11 @@ void graphics_foreign_blit(WrenVM* vm){
     graphics_blit(x, y);
 }
 
+void graphics_blit_patch(struct Atlas* atlas, Image* src, int px, int py, int pw, int ph, int x, int y, int w, int h){
+    ImageDraw(&atlas->image, *src, (Rectangle){px, py, pw, ph}, (Rectangle){x, y, w, h}, WHITE);
+    graphics_reload_texture_rect(atlas, (Rectangle){x, y, w, h});
+}
+
 void graphics_draw_text(char* text, int x, int y){
     DrawTextEx(global_font, text, (Vector2){x, y}, global_font.baseSize, 1, global_draw_colour);
 }
@@ -135,7 +144,6 @@ void graphics_foreign_draw_text(WrenVM* vm){
     char* text = wrenGetSlotString(vm, 1);
     int x = wrenGetSlotDouble(vm, 2);
     int y = wrenGetSlotDouble(vm, 3);
-    //int c = wrenGetSlotDouble(vm, 2);
     graphics_draw_text(text, x, y);
 }
 
@@ -180,12 +188,24 @@ void graphics_foreign_draw_rectangle_lines(WrenVM* vm){
     graphics_draw_rectangle_lines(x, y, w, h);
 }
 
+/*void graphics_draw_icon(int x, int y, int i){
+    int iy = floor(i/(ICONS_HEIGHT/ICON_SIZE));
+    int ix = i-(iy*(ICONS_HEIGHT/ICON_SIZE));
+    graphics_draw_patch_tint(&global_icons, ix*ICON_SIZE, iy*ICON_SIZE, ICON_SIZE, ICON_SIZE, x, y, ICON_SIZE, ICON_SIZE);
+}*/
+
+/*void graphics_foreign_draw_icon(WrenVM* vm){
+    int x = wrenGetSlotDouble(vm, 1);
+    int y = wrenGetSlotDouble(vm, 2);
+    int i = wrenGetSlotDouble(vm, 3);
+    graphics_draw_icon(x, y, i);
+}*/
+
 int get_next_char(Image* img, int x){
     Color key_colour = (Color){255, 0, 0, 255};
     int j = x;
     while (j<img->width){
         j += 1;
-        //printf("j: %i\n", j);
         if (ColorIsEqual(GetImageColor(*img, j, 0), key_colour)){
             x = j+1;
             return x;
@@ -206,11 +226,12 @@ void graphics_load_font_image(char* path, char* characters){
 
     int start = 0;
     int end = 0;
-    //printf("%i\n", GetImageColor(img, 0, 0).r);
-    for (int i=0;i<strlen(characters); i++){
-        //printf("%i\n", i);
+
+    int codepoint_count = 0;
+    int* codepoints = LoadCodepoints(characters, &codepoint_count);
+    for (int i=0;i<codepoint_count; i++){
         end = get_next_char(&img, start)-2;
-        char c = characters[i];
+        int c = codepoints[i];
 
         int descender = 0;
 
@@ -233,6 +254,7 @@ void graphics_load_font_image(char* path, char* characters){
         if (start>=img.width) break;
     }
 
+    free(codepoints);
     UnloadImage(img);
 }
 
@@ -240,21 +262,26 @@ void graphics_load_default_font(){
     graphics_load_font_image("res/font_short.png", "abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "1234567890"
-        ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><");
+        ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><"
+        "¡");
     //global_font = LoadFont("res/GEORGIA.ttf");//LoadFontEx("res/GEORGIA.ttf", 10, NULL, 0);
     //global_font = LoadFontEx("res/Dina_r700-10.bdf", 10, NULL, 0);
 }
 
 void graphics_init(){
     palette_load_default();
-    graphics_load_atlas(&global_atlas); //,"res/sprite.png");
-    graphics_load_atlas(&global_icons);
+    graphics_load_atlas(&global_atlas, ATLAS_WIDTH, ATLAS_HEIGHT); //,"res/sprite.png");
+
+    /*graphics_load_atlas(&global_icons, ICONS_WIDTH, ICONS_HEIGHT);
+    Image icon_src = LoadImage("res/icon.bmp");
+    graphics_blit_patch(&global_icons, &icon_src, 0, 0, ICONS_WIDTH, ICONS_HEIGHT, 0, 0, ICONS_WIDTH, ICONS_HEIGHT);*/
+
     graphics_load_default_font();
 }
 
 void graphics_close(){
     graphics_unload_atlas(&global_atlas);
-    graphics_unload_atlas(&global_icons);
+    //graphics_unload_atlas(&global_icons);
     UnloadFont(global_font);
 }
 

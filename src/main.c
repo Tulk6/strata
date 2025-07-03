@@ -3,6 +3,9 @@
 #define WINDOW_SCALE 2
 #define ATLAS_WIDTH 256
 #define ATLAS_HEIGHT 256
+/*#define ICONS_WIDTH 64
+#define ICONS_HEIGHT 64
+#define ICON_SIZE 8*/
 
 #include "raylib.h"
 #define RAYGUI_IMPLEMENTATION

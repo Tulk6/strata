@@ -30,6 +30,7 @@ WrenForeignMethodFn foreign_methods(const char* signature){
     if (!strcmp(signature, "static Graphics.draw_rectangle_lines(_,_,_,_)")) return graphics_foreign_draw_rectangle_lines;
     if (!strcmp(signature, "static Graphics.blit(_,_)")) return graphics_foreign_blit;
     if (!strcmp(signature, "static Graphics.draw_line(_,_,_,_)")) return graphics_foreign_draw_line;
+    //if (!strcmp(signature, "static Graphics.draw_icon(_,_,_)")) return graphics_foreign_draw_icon;
 
     if (!strcmp(signature, "static Input.key_down(_)")) return input_foreign_key_down;
     if (!strcmp(signature, "static Input.key_pressed(_)")) return input_foreign_key_pressed;

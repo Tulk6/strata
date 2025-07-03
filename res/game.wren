@@ -80,21 +80,23 @@ class SpriteEditor {
         _draw_grid = true
         _atlas_x = 0
         _atlas_y = 0
+        _atlas_crop = 128
+        _atlas_size = 256
         _pri_colour = 0
         _sec_colour = 1
     }
 
     get_mouse_pixel_x(){
-        return (Input.get_mouse_x()- _left_margin)/_scale
+        return ((Input.get_mouse_x()- _left_margin)/_scale).floor
     }
     get_mouse_pixel_y(){
-        return (Input.get_mouse_y()- _top_margin)/_scale
+        return ((Input.get_mouse_y()- _top_margin)/_scale).floor
     }
 
     update() {
         Graphics.set_draw_colour(5)
         
-        if (get_mouse_pixel_x()<_crop && get_mouse_pixel_y()<_crop){
+        if ((0..._crop).contains(get_mouse_pixel_x()) && (0..._crop).contains(get_mouse_pixel_y())){
             if (Input.button_down(Mouse.left)){
                 Graphics.set_draw_colour(_pri_colour)
                 Graphics.blit(this.get_mouse_pixel_x(), this.get_mouse_pixel_y())
@@ -135,7 +137,9 @@ class SpriteEditor {
         Graphics.draw_patch(_crop_x, _crop_y, _crop, _crop, x, y, _crop*_scale, _crop*_scale)
 
         Graphics.set_draw_colour(_pri_colour)
-        if (get_mouse_pixel_x()<_crop && get_mouse_pixel_y()<_crop){
+        //System.print(get_mouse_pixel_x())
+        if ((0..._crop).contains(get_mouse_pixel_x()) && (0..._crop).contains(get_mouse_pixel_y())){
+            
             Graphics.draw_rectangle(get_mouse_pixel_x().floor*_scale+x, get_mouse_pixel_y().floor*_scale+y, _scale, _scale)
         }
 
@@ -151,14 +155,18 @@ class SpriteEditor {
     }
 
     draw_atlas(x, y){
-        Graphics.draw_patch(128*_atlas_x, 128*_atlas_x, 128, 128, _left_margin+_crop*_scale+10, _top_margin, 128, 128)
-        
+        Graphics.draw_patch(_atlas_x, _atlas_y, _atlas_crop, _atlas_crop, x, y, _atlas_crop, _atlas_crop)
+        Graphics.draw_rectangle(x, y+_atlas_crop+5, 10, 10)
+        if (UI.button(x, y+_atlas_crop+5, 10, 10) == Mouse.left){
+            _atlas_x = (_atlas_x+_atlas_crop).clamp(0, _atlas_size-_atlas_crop)
+        }
+        //Graphics.draw_icon(0, 0, 0)
     }
 
     draw() {
         draw_palette(_left_margin, _top_margin+_crop*_scale+5)
         draw_editor(_left_margin, _top_margin)
-        draw_atlas(_crop*_scale+10, _top_margin)
+        draw_atlas(_crop*_scale+20, _top_margin)
     }
 }
 
@@ -202,6 +210,8 @@ class Game {
         }
 
         draw_statusbar()
+
+        Graphics.draw_text("¡", 0, 0)
     }
 
     get_code(){
