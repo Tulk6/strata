@@ -71,6 +71,7 @@ class Graphics {
     foreign static clear_screen()
 
     foreign static draw_text(text, x, y)
+    foreign static draw_icon(text, x, y)
 
     foreign static set_draw_colour(col)
 
@@ -92,8 +93,35 @@ class Shape {
     }
 }
 
+class Icon {
+    static left {"\u2190"}
+    static right {"→"}
+    static up {"↑"}
+    static down {"↓"}
+}
+
 class UI {
     static button(x,y,w,h){
+        if (!Shape.point_in_rec(Input.get_mouse_x(), Input.get_mouse_y(), x, y, w, h)) {
+            return false
+        }
+        var left = Input.button_pressed(Mouse.left)
+        var right = Input.button_pressed(Mouse.right)
+        if (left == true) { 
+            return Mouse.left 
+        }
+        if (right == true) { 
+            return Mouse.right 
+        }
+        return Mouse.none
+    }
+
+    static button_icon(s,x,y){
+        var w = s.count*9
+        var h = 9
+        
+        Graphics.draw_icon(s, x, y)
+        
         if (!Shape.point_in_rec(Input.get_mouse_x(), Input.get_mouse_y(), x, y, w, h)) {
             return false
         }

@@ -25,6 +25,7 @@ WrenForeignMethodFn foreign_methods(const char* signature){
     if (!strcmp(signature, "static Graphics.draw(_,_)")) return graphics_foreign_draw;
     if (!strcmp(signature, "static Graphics.clear_screen()")) return graphics_foreign_clear_screen;
     if (!strcmp(signature, "static Graphics.draw_text(_,_,_)")) return graphics_foreign_draw_text;
+    if (!strcmp(signature, "static Graphics.draw_icon(_,_,_)")) return graphics_foreign_draw_icon;
     if (!strcmp(signature, "static Graphics.set_draw_colour(_)")) return graphics_foreign_set_draw_colour;
     if (!strcmp(signature, "static Graphics.draw_rectangle(_,_,_,_)")) return graphics_foreign_draw_rectangle;
     if (!strcmp(signature, "static Graphics.draw_rectangle_lines(_,_,_,_)")) return graphics_foreign_draw_rectangle_lines;

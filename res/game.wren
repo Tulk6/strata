@@ -156,8 +156,14 @@ class SpriteEditor {
 
     draw_atlas(x, y){
         Graphics.draw_patch(_atlas_x, _atlas_y, _atlas_crop, _atlas_crop, x, y, _atlas_crop, _atlas_crop)
-        Graphics.draw_rectangle(x, y+_atlas_crop+5, 10, 10)
-        if (UI.button(x, y+_atlas_crop+5, 10, 10) == Mouse.left){
+        //Graphics.draw_icon(Icon.left+" "+Icon.right+"  "+Icon.up+" "+Icon.down, x, y+_atlas_crop+5)
+        //Graphics.draw_icon(, x, y+_atlas_crop+5)
+
+
+        if (UI.button_icon(Icon.left, x, y+_atlas_crop+5) == Mouse.left){
+            _atlas_x = (_atlas_x-_atlas_crop).clamp(0, _atlas_size-_atlas_crop)
+        }
+        if (UI.button_icon(Icon.right, x+15, y+_atlas_crop+5) == Mouse.left){
             _atlas_x = (_atlas_x+_atlas_crop).clamp(0, _atlas_size-_atlas_crop)
         }
         //Graphics.draw_icon(0, 0, 0)
@@ -210,8 +216,6 @@ class Game {
         }
 
         draw_statusbar()
-
-        Graphics.draw_text("¡", 0, 0)
     }
 
     get_code(){

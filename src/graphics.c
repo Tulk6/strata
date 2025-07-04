@@ -8,6 +8,10 @@ Font global_font;
 int global_font_width = 5;
 int global_font_height = 9;
 
+Font global_font_icon;
+int global_icon_font_height = 8;
+int global_icon_font_width = 8;
+
 Color global_draw_colour;
 
 void graphics_load_atlas(struct Atlas* atlas, int width, int height){
@@ -147,6 +151,17 @@ void graphics_foreign_draw_text(WrenVM* vm){
     graphics_draw_text(text, x, y);
 }
 
+void graphics_draw_icon(char* text, int x, int y){
+    DrawTextEx(global_font_icon, text, (Vector2){x, y}, global_font_icon.baseSize, 1, global_draw_colour);
+}
+
+void graphics_foreign_draw_icon(WrenVM* vm){
+    char* text = wrenGetSlotString(vm, 1);
+    int x = wrenGetSlotDouble(vm, 2);
+    int y = wrenGetSlotDouble(vm, 3);
+    graphics_draw_icon(text, x, y);
+}
+
 void graphics_clear_screen(){
     ClearBackground(global_draw_colour);
 }
@@ -214,15 +229,15 @@ int get_next_char(Image* img, int x){
     return x;
 }
 
-void graphics_load_font_image(char* path, char* characters){
+void graphics_load_font_image(Font* font, char* path, char* characters){
     Image img = LoadImage(path);
 
-    global_font.baseSize = img.height;
-    global_font.glyphCount = strlen(characters);
-    global_font.glyphPadding = 0;
-    global_font.texture = LoadTextureFromImage(img);
-    global_font.recs = (Rectangle*)malloc(sizeof(Rectangle)*global_font.glyphCount);
-    global_font.glyphs = (GlyphInfo*)malloc(sizeof(GlyphInfo)*global_font.glyphCount);
+    font->baseSize = img.height;
+    font->glyphCount = strlen(characters);
+    font->glyphPadding = 0;
+    font->texture = LoadTextureFromImage(img);
+    font->recs = (Rectangle*)malloc(sizeof(Rectangle)*font->glyphCount);
+    font->glyphs = (GlyphInfo*)malloc(sizeof(GlyphInfo)*font->glyphCount);
 
     int start = 0;
     int end = 0;
@@ -246,9 +261,9 @@ void graphics_load_font_image(char* path, char* characters){
         //printf("############ %i -> %i\n", start, end);
         Rectangle tmp_rec = (Rectangle){start, 0, end-start+1, img.height};
         Image tmp_img = ImageFromImage(img, tmp_rec);
-        global_font.recs[i] = tmp_rec;
+        font->recs[i] = tmp_rec;
         
-        global_font.glyphs[i] = (GlyphInfo){c, 0, descender, 0, tmp_img};
+        font->glyphs[i] = (GlyphInfo){c, 0, descender, 0, tmp_img};
 
         start = end+2;
         if (start>=img.width) break;
@@ -259,11 +274,12 @@ void graphics_load_font_image(char* path, char* characters){
 }
 
 void graphics_load_default_font(){
-    graphics_load_font_image("res/font_short.png", "abcdefghijklmnopqrstuvwxyz"
+    graphics_load_font_image(&global_font, "res/font_short.png", "abcdefghijklmnopqrstuvwxyz"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "1234567890"
-        ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><"
-        "¡");
+        ".,|_+-/\\()[]{}!?\"'@#$%^&*=:;~`><");
+    graphics_load_font_image(&global_font_icon, "res/font_icon.png",
+        "←→✏🪣⌦↑↓✓❌⌂▶⏸⏹❤🔍⛶🗕⊡⏪⏩⧖⌛⏳🔔👁🗛⏰ℹƒ🙈↻⬚𝅘𝅥🖈⊞□■");
     //global_font = LoadFont("res/GEORGIA.ttf");//LoadFontEx("res/GEORGIA.ttf", 10, NULL, 0);
     //global_font = LoadFontEx("res/Dina_r700-10.bdf", 10, NULL, 0);
 }
