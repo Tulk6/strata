@@ -99,10 +99,10 @@ class SpriteEditor {
         if ((0..._crop).contains(get_mouse_pixel_x()) && (0..._crop).contains(get_mouse_pixel_y())){
             if (Input.button_down(Mouse.left)){
                 Graphics.set_draw_colour(_pri_colour)
-                Graphics.blit(this.get_mouse_pixel_x(), this.get_mouse_pixel_y())
+                Graphics.blit(this.get_mouse_pixel_x()+_crop_x, this.get_mouse_pixel_y()+_crop_y)
             }else if (Input.button_down(Mouse.right)){
                 Graphics.set_draw_colour(_sec_colour)
-                Graphics.blit(this.get_mouse_pixel_x(), this.get_mouse_pixel_y())
+                Graphics.blit(this.get_mouse_pixel_x()+_crop_x, this.get_mouse_pixel_y()+_crop_y)
             }            
         }
 
@@ -156,8 +156,18 @@ class SpriteEditor {
 
     draw_atlas(x, y){
         Graphics.draw_patch(_atlas_x, _atlas_y, _atlas_crop, _atlas_crop, x, y, _atlas_crop, _atlas_crop)
-        //Graphics.draw_icon(Icon.left+" "+Icon.right+"  "+Icon.up+" "+Icon.down, x, y+_atlas_crop+5)
-        //Graphics.draw_icon(, x, y+_atlas_crop+5)
+
+        Graphics.set_draw_colour(5)
+        if ((x...x+_atlas_crop).contains(x+(_crop_x)-_atlas_x) && (y...y+_atlas_crop).contains(y+(_crop_y)-_atlas_y)){
+            Graphics.draw_rectangle_lines(x+(_crop_x)-_atlas_x, y+(_crop_y)-_atlas_y, _crop, _crop)
+        }
+
+        if (UI.button(x, y, _atlas_crop, _atlas_crop) == Mouse.left){
+            var px = ((Input.get_mouse_x()-x+_atlas_x)/_crop).floor
+            var py = ((Input.get_mouse_y()-y+_atlas_y)/_crop).floor
+            _crop_x = px*_crop
+            _crop_y = py*_crop
+        }
 
 
         if (UI.button_icon(Icon.left, x, y+_atlas_crop+5) == Mouse.left){
@@ -165,6 +175,13 @@ class SpriteEditor {
         }
         if (UI.button_icon(Icon.right, x+15, y+_atlas_crop+5) == Mouse.left){
             _atlas_x = (_atlas_x+_atlas_crop).clamp(0, _atlas_size-_atlas_crop)
+        }
+
+        if (UI.button_icon(Icon.up, x+80, y+_atlas_crop+5) == Mouse.left){
+            _atlas_y = (_atlas_y-_atlas_crop).clamp(0, _atlas_size-_atlas_crop)
+        }
+        if (UI.button_icon(Icon.down, x+95, y+_atlas_crop+5) == Mouse.left){
+            _atlas_y = (_atlas_y+_atlas_crop).clamp(0, _atlas_size-_atlas_crop)
         }
         //Graphics.draw_icon(0, 0, 0)
     }
