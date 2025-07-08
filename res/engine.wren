@@ -4,6 +4,8 @@ class Engine {
     static font_w {5}
     static font_h {8}
     static font_a {3}
+
+    foreign static load_game(code)
 }
 
 class Input {
@@ -35,6 +37,8 @@ class Input {
 }
 
 class Key {
+    static control {341}
+
     static f5 {294}
     static backspace {259}
     static delete {261}
@@ -57,6 +61,9 @@ class Mouse {
 }
 
 class Graphics {
+    foreign static set_draw_colour(col)
+    //foreign static get_draw_colour()
+
     foreign static draw_sprite(sprite, x, y, rotation) 
     foreign static draw_image(sprite, x, y, rotation)
     foreign static draw_image_scaled(sprite, x, y, sx, sy, rotation)
@@ -66,14 +73,18 @@ class Graphics {
     foreign static draw_rectangle(x, y, w, h)
     foreign static draw_rectangle_lines(x, y, w, h)
 
+    static draw_rectangle_border(x, y, w, h, border_colour) {
+        Graphics.draw_rectangle(x, y, w, h)
+        Graphics.set_draw_colour(border_colour)
+        Graphics.draw_rectangle_lines(x, y, w, h)
+    }
+
     foreign static draw_line(x, y, ex, ey)
 
     foreign static clear_screen()
 
     foreign static draw_text(text, x, y)
     foreign static draw_icon(text, x, y)
-
-    foreign static set_draw_colour(col)
 
     foreign static blit(x, y)
 
@@ -94,7 +105,7 @@ class Shape {
 }
 
 class Icon {
-    static left {"\u2190"}
+    static left {"←"}
     static right {"→"}
     static up {"↑"}
     static down {"↓"}

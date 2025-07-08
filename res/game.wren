@@ -1,4 +1,6 @@
 class TextEditor {
+    left_margin {5}
+    top_margin {5}
     construct new() {
         _code = [""]
         _c_row = 0
@@ -17,6 +19,10 @@ class TextEditor {
         _code.insert(_c_row+1, "")
         _code[_c_row+1] = _code[_c_row][_c_column..-1]
         _code[_c_row] = _code[_c_row][0..._c_column]
+    }
+
+    get_code_string(){
+        return _code.join("\n")
     }
 
     update() {
@@ -59,13 +65,15 @@ class TextEditor {
     }
 
     draw() {
-        Graphics.set_draw_colour(0)
+        Graphics.set_draw_colour(6)
+        Graphics.clear_screen()
+        Graphics.set_draw_colour(7)
         for (i in 0..._code.count){
             var line = _code[i]
-            Graphics.draw_text(line, 0, i*12)
+            Graphics.draw_text(line, this.left_margin, this.top_margin+i*12)
         }
         Graphics.set_draw_colour(2)
-        Graphics.draw_rectangle(_c_column*6, _c_row*12, 1, 9)
+        Graphics.draw_rectangle(_c_column*6+this.left_margin, _c_row*12+this.top_margin, 1, 9)
     }
 }
 
@@ -77,7 +85,7 @@ class SpriteEditor {
         _crop = 32
         _crop_x = 0
         _crop_y = 0
-        _draw_grid = true
+        _draw_grid = false
         _atlas_x = 0
         _atlas_y = 0
         _atlas_crop = 128
@@ -111,18 +119,23 @@ class SpriteEditor {
 
     draw_palette(x, y){
         var swatch_size = 10
-        var swatch_bound = swatch_size+2
+        var swatch_bound = swatch_size
         var pen_size = 20
+
+        Graphics.set_draw_colour(6)
+        Graphics.draw_rectangle_border(x, y, 8*swatch_bound+2, 4*swatch_bound+2, 7)
+        
         for (i in 0...4){
             for (j in 0...8){
-                Graphics.set_draw_colour(i*swatch_size+j)
-                Graphics.draw_rectangle(x+j*swatch_bound, y+i*swatch_bound, swatch_size, swatch_size)
+                Graphics.set_draw_colour(i*8+j)
+                Graphics.draw_rectangle(x+j*swatch_bound+1, y+i*swatch_bound+1, swatch_size, swatch_size)
             }
         }
+        
         Graphics.set_draw_colour(_pri_colour)
-        Graphics.draw_rectangle(x+9*swatch_bound, y, pen_size, pen_size)
+        Graphics.draw_rectangle_border(x+9*swatch_bound, y, pen_size, pen_size, 7)
         Graphics.set_draw_colour(_sec_colour)
-        Graphics.draw_rectangle(x+9*swatch_bound, y+pen_size+2, pen_size, pen_size)
+        Graphics.draw_rectangle_border(x+9*swatch_bound, y+pen_size+2, pen_size, pen_size, 7)
 
         var m_pal_column = ((Input.get_mouse_x()-x)/swatch_bound).floor
         var m_pal_row = ((Input.get_mouse_y()-y)/swatch_bound).floor
@@ -134,6 +147,10 @@ class SpriteEditor {
     }
 
     draw_editor(x, y){
+        Graphics.set_draw_colour(6)
+        Graphics.draw_rectangle(x, y, _crop*_scale, _crop*_scale)
+        Graphics.set_draw_colour(7)
+        Graphics.draw_rectangle_lines(x, y, _crop*_scale, _crop*_scale)
         Graphics.draw_patch(_crop_x, _crop_y, _crop, _crop, x, y, _crop*_scale, _crop*_scale)
 
         Graphics.set_draw_colour(_pri_colour)
@@ -155,6 +172,10 @@ class SpriteEditor {
     }
 
     draw_atlas(x, y){
+        Graphics.set_draw_colour(6)
+        Graphics.draw_rectangle(x, y, _atlas_crop, _atlas_crop)
+        Graphics.set_draw_colour(7)
+        Graphics.draw_rectangle_lines(x, y, _atlas_crop, _atlas_crop)
         Graphics.draw_patch(_atlas_x, _atlas_y, _atlas_crop, _atlas_crop, x, y, _atlas_crop, _atlas_crop)
 
         Graphics.set_draw_colour(5)
@@ -187,6 +208,8 @@ class SpriteEditor {
     }
 
     draw() {
+        Graphics.set_draw_colour(8)
+        Graphics.clear_screen()
         draw_palette(_left_margin, _top_margin+_crop*_scale+5)
         draw_editor(_left_margin, _top_margin)
         draw_atlas(_crop*_scale+20, _top_margin)
@@ -196,6 +219,7 @@ class SpriteEditor {
 class Game {
     mode_code {0}
     mode_paint {1}
+    modes {["CODE", "PAINT"]}
     num_modes {2}
 
     construct init() {
@@ -203,10 +227,12 @@ class Game {
         _sprite_editor = SpriteEditor.new()
 
         _mode = this.mode_paint
+
+        //Engine.load_game("etest")
     }
 
     update(delta) {
-        if (Input.key_pressed(Key.tab)){
+        if (Input.key_pressed(Key.tab) && Input.key_down(Key.control)){
             _mode = (_mode+1)%this.num_modes
         }
         if (_mode == this.mode_code){
@@ -215,16 +241,32 @@ class Game {
             _sprite_editor.update()
         }
         
+        if (Input.key_pressed(Key.f5)){
+            //System.print(_text_editor.get_code_string())
+            Engine.load_game(_text_editor.get_code_string())
+        }
     }
 
     draw_statusbar() {
+        var button_width = 40
+        var bar_height = 14
+        var bar_y = Engine.height-bar_height
+        var button_m = 5
+
         Graphics.set_draw_colour(4)
-        Graphics.draw_rectangle(0, Engine.height-14, Engine.width, 14)
+        Graphics.draw_rectangle(0, bar_y, Engine.width, bar_height)
+
+        for (i in 0...this.num_modes){
+            var button_x = i*(button_width+button_m)+2
+            Graphics.set_draw_colour(3)
+            Graphics.draw_rectangle(button_x, bar_y+1, button_width, bar_height-2)
+            Graphics.set_draw_colour(7)
+            Graphics.draw_text(this.modes[i], button_x+2, bar_y+3)
+        }
     }
 
     draw(delta) {
-        Graphics.set_draw_colour(1)
-        Graphics.clear_screen()
+        
 
         if (_mode == this.mode_code){
             _text_editor.draw()
@@ -235,7 +277,4 @@ class Game {
         draw_statusbar()
     }
 
-    get_code(){
-
-    }
 }

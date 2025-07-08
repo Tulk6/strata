@@ -4,6 +4,12 @@ WrenHandle* wren_update_handle;
 WrenHandle* wren_draw_handle;
 WrenHandle* wren_game_handle;
 
+bool interface_call_load_game;
+char* interface_code = NULL;
+
+//WrenForeignMethodFn foreign_methods(const char* signature);
+void interface_foreign_load_game(WrenVM* vm);
+
 void write_fn(WrenVM* vm, const char* text){
     printf("%s", text);
 }
@@ -16,7 +22,7 @@ void print_mult(WrenVM* vm){
 }
 
 WrenForeignMethodFn foreign_methods(const char* signature){ 
-    //if (!strcmp(signature, "static Engine.load_game(_)")) return interface_foreign_load_game;
+    if (!strcmp(signature, "static Engine.load_game(_)")) return interface_foreign_load_game;
 
     if (!strcmp(signature, "static Graphics.draw_sprite(_,_,_,_)")) return graphics_foreign_draw_sprite;
     if (!strcmp(signature, "static Graphics.draw_image(_,_,_,_)")) return graphics_foreign_draw_image;
@@ -27,6 +33,7 @@ WrenForeignMethodFn foreign_methods(const char* signature){
     if (!strcmp(signature, "static Graphics.draw_text(_,_,_)")) return graphics_foreign_draw_text;
     if (!strcmp(signature, "static Graphics.draw_icon(_,_,_)")) return graphics_foreign_draw_icon;
     if (!strcmp(signature, "static Graphics.set_draw_colour(_)")) return graphics_foreign_set_draw_colour;
+    //if (!strcmp(signature, "static Graphics.get_draw_colour(_)")) return graphics_foreign_get_draw_colour;
     if (!strcmp(signature, "static Graphics.draw_rectangle(_,_,_,_)")) return graphics_foreign_draw_rectangle;
     if (!strcmp(signature, "static Graphics.draw_rectangle_lines(_,_,_,_)")) return graphics_foreign_draw_rectangle_lines;
     if (!strcmp(signature, "static Graphics.blit(_,_)")) return graphics_foreign_blit;
@@ -157,12 +164,25 @@ void interface_load_game(char* code){
     interface_get_handles();
 }
 
+void interface_foreign_load_game(WrenVM* vm){
+    if (interface_code != NULL){
+        free(interface_code);
+    }
+    char* wren_code_ptr = wrenGetSlotString(vm, 1);
+    interface_code = malloc(sizeof(char)*(strlen(wren_code_ptr)+1));
+    strcat(interface_code, wren_code_ptr);
+    interface_call_load_game = true;
+}
+
 void interface_init(){
 
 }
 
 void interface_close(){
     if (vm != NULL){
+        wrenReleaseHandle(vm, wren_update_handle);
+        wrenReleaseHandle(vm, wren_draw_handle);
+        wrenReleaseHandle(vm, wren_game_handle);
         wrenFreeVM(vm);
     }
 }

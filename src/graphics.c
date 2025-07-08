@@ -174,10 +174,22 @@ void graphics_set_draw_colour(int index){
     global_draw_colour = palette_get_colour(index);
 }
 
+
 void graphics_foreign_set_draw_colour(WrenVM* vm){
     int colour_index = wrenGetSlotDouble(vm, 1);
     graphics_set_draw_colour(colour_index);
 }
+
+
+/*void graphics_get_draw_colour(int index){
+    return global_draw_colour;
+}
+
+
+void graphics_foreign_get_draw_colour(WrenVM* vm){
+    int colour_index = wrenGetSlotDouble(vm, 1);
+    graphics_set_draw_colour(colour_index);
+}*/
 
 void graphics_draw_rectangle(int x, int y, int w, int h){
     DrawRectangle(x, y, w, h, global_draw_colour);
@@ -192,7 +204,7 @@ void graphics_foreign_draw_rectangle(WrenVM* vm){
 }
 
 void graphics_draw_rectangle_lines(int x, int y, int w, int h){
-    DrawRectangleLines(x, y, w, h, global_draw_colour);
+    DrawRectangleLinesEx((Rectangle){x, y, w, h}, 1, global_draw_colour);
 }
 
 void graphics_foreign_draw_rectangle_lines(WrenVM* vm){

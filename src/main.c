@@ -25,11 +25,18 @@
 #include "graphics.c"
 #include "interface.c"
 
+enum EngineMode{
+    ENGINE_MODE_EDITOR,
+    ENGINE_MODE_RUN
+};
+
 RenderTexture render_target;
+
+enum EngineMode engine_mode = ENGINE_MODE_EDITOR;
 
 void window_init(){
     InitWindow(RENDER_WIDTH*WINDOW_SCALE, RENDER_HEIGHT*WINDOW_SCALE, "hight");
-    SetTargetFPS(30);
+    SetTargetFPS(60);
     SetExitKey(KEY_NULL);
     render_target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
 }
@@ -62,7 +69,7 @@ int main(){
 
     char* game = LoadFileText("res/game.wren");
     interface_load_game(game);
-    UnloadFileText(game);
+    
     
     while (!WindowShouldClose()){
         BeginTextureMode(render_target);
@@ -78,17 +85,11 @@ int main(){
         
         if (IsKeyPressed(KEY_F5)){
             engine_run_game();
-        }
-        if (IsKeyPressed(KEY_ESCAPE)){
-            global_engine_mode = ENGINE_MODE_CODE;
-        }
-        if (global_engine_mode == ENGINE_MODE_RUN){
-            interface_update();
-            interface_draw();
-        }else{
-            engine_update();
-            engine_draw();
         }*/
+        if (IsKeyPressed(KEY_ESCAPE)){
+            interface_load_game(game);
+        }
+
         interface_update();
         interface_draw();
 
@@ -100,6 +101,16 @@ int main(){
                                         (Vector2){0,0}, 0, WHITE);
         //DrawFPS(0,0);
         EndDrawing();
+
+        if (interface_call_load_game){
+            interface_call_load_game = false;
+            interface_load_game(interface_code);
+            if (interface_code != NULL){
+                free(interface_code);
+            }
+        }
     }
+    UnloadFileText(game);
     main_close();
+
 }
